@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 import timber.log.Timber;
 
@@ -85,12 +87,18 @@ public class MainActivity extends AppCompatActivity {
         if (adapter != null) {
           adapter.notifyDataSetChanged();
         }
+        //bluetoothAdapter.cancelDiscovery();
       } else if (intent.getAction().equals(BluetoothDevice.ACTION_ACL_CONNECTED)) {
         Timber.d("ACTION_ACL_CONNECTED");
       } else if (intent.getAction().equals(BluetoothDevice.ACTION_ACL_DISCONNECTED)) {
         Timber.d("ACTION_ACL_DISCONNECTED");
       } else if (intent.getAction().equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)) {
         Timber.d("ACTION_BOND_STATE_CHANGED");
+      } else if (intent.getAction().equals(BluetoothAdapter.ACTION_DISCOVERY_STARTED)) {
+        Timber.d("Bluetooth Device discovery started");
+      } else if (intent.getAction().equals(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)) {
+        Timber.d("Bluetooth Device discovery finished");
+        startDiscovery();
       }
     }
   };
@@ -98,20 +106,23 @@ public class MainActivity extends AppCompatActivity {
   String[] discoveryIntents = {
       BluetoothDevice.ACTION_FOUND, BluetoothDevice.ACTION_ACL_CONNECTED,
       BluetoothDevice.ACTION_ACL_DISCONNECTED, BluetoothDevice.ACTION_BOND_STATE_CHANGED,
-      BluetoothDevice.ACTION_CLASS_CHANGED
+      BluetoothDevice.ACTION_CLASS_CHANGED, BluetoothAdapter.ACTION_DISCOVERY_STARTED,
+      BluetoothAdapter.ACTION_DISCOVERY_FINISHED
   };
 
   private Handler discoveryHandler = new Handler();
   private Runnable discoveryRunnable = new Runnable() {
     @Override public void run() {
-      startDiscovery();
+      //startDiscovery();
     }
   };
 
+  private boolean startDiscovery = true;
+
   private void startDiscovery() {
     Timber.d("StartDiscovery");
-    discoveryHandler.postDelayed(discoveryRunnable, 2000);
-    //bluetoothAdapter.startDiscovery();
+    if (bluetoothAdapter.isDiscovering()) bluetoothAdapter.cancelDiscovery();
+    bluetoothAdapter.startDiscovery();
   }
 
   /**
@@ -233,7 +244,7 @@ public class MainActivity extends AppCompatActivity {
     getPairedDevices();
 
     //create a server
-    createServer();
+    //createServer();
   }
 
   @Override protected void onPause() {
@@ -286,8 +297,10 @@ public class MainActivity extends AppCompatActivity {
 
     @Override public void onBindViewHolder(ViewHolderMain holder, int position) {
       BluetoothDevice device = devices[position];
+      String name = "";
       if (device != null) {
-        holder.textView.setText(device.getName().concat("::").concat(device.getAddress()));
+        name = device.getName() == null ? name : device.getName();
+        holder.textView.setText(name.concat("::").concat(device.getAddress()));
       }
     }
 
