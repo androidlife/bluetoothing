@@ -4,6 +4,9 @@
 
   <uses-permission android:name="android.permission.BLUETOOTH"/>
   <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+  <!--http://stackoverflow.com/questions/34966133/android-bluetooth-discovery-doesnt-find-any-device
+   From Android 6.0 and above-->
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
   <application
       android:allowBackup="true"

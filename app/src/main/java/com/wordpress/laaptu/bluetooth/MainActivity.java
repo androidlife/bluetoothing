@@ -2,13 +2,15 @@ package com.wordpress.laaptu.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothServerSocket;
-import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Handler;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -16,13 +18,10 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.UUID;
+import java.util.jar.Manifest;
 import timber.log.Timber;
 
 import static android.R.attr.data;
@@ -32,6 +31,51 @@ public class MainActivity extends AppCompatActivity {
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
+    initPermissions();
+  }
+
+  String[] permissions = { android.Manifest.permission.ACCESS_COARSE_LOCATION };
+  ArrayList<String> permissionNotGranted = new ArrayList<>();
+  static final int RETURN_FROM_REQUEST = 0x10;
+
+  private void initPermissions() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+      ArrayList<String> permissionList = new ArrayList<>();
+      for (String permission : permissions) {
+        if (ContextCompat.checkSelfPermission(this, permission)
+            != PackageManager.PERMISSION_GRANTED) {
+          permissionList.add(permission);
+        }
+      }
+      if (permissionList.size() > 0) {
+        String[] permissions = new String[permissionList.size()];
+        permissionList.toArray(permissions);
+        ActivityCompat.requestPermissions(this, permissions, RETURN_FROM_REQUEST);
+        return;
+      }
+    }
+    init();
+  }
+
+  @Override public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+      @NonNull int[] grantResults) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    switch (requestCode) {
+      case RETURN_FROM_REQUEST:
+        for (int i = 0, length = grantResults.length; i < length; ++i) {
+          if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
+            permissionNotGranted.add(permissions[i]);
+          }
+        }
+        init();
+        break;
+      default:
+        break;
+    }
+
+  }
+
+  private void init() {
     initViews();
     bluetoothTest();
   }
@@ -48,22 +92,6 @@ public class MainActivity extends AppCompatActivity {
   BluetoothAdapter bluetoothAdapter;
   static final int REQUEST_BLUETOOTH_ENABLE = 0x9;
 
-  /**
-   * */
-  BluetoothServerSocket serverSocket;
-
-  private void createServer() {
-    if (true) return;
-    try {
-      serverSocket =
-          bluetoothAdapter.listenUsingRfcommWithServiceRecord("FirstChat", UUID.randomUUID());
-      new AcceptSocketThread().start();
-    } catch (IOException e) {
-      Timber.e("Unable to create server socket");
-      e.printStackTrace();
-    }
-  }
-
   Set<BluetoothDevice> connectedDevices = new HashSet<>();
   Set<BluetoothDevice> discoveredDevices = new HashSet<>();
   /**
@@ -76,7 +104,8 @@ public class MainActivity extends AppCompatActivity {
   private final BroadcastReceiver deviceDiscoveryBR = new BroadcastReceiver() {
     @Override public void onReceive(Context context, Intent intent) {
       Timber.d("Device discovered bluetooth receiver");
-      if (intent != null && intent.getAction().equals(BluetoothDevice.ACTION_FOUND)) {
+      if (intent == null || intent.getAction() == null) return;
+      if (intent.getAction().equals(BluetoothDevice.ACTION_FOUND)) {
         Timber.d("ACTION_FOUND");
         BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
         Timber.d("Discovered device = %s and its address = %s", device.getName(),
@@ -87,37 +116,19 @@ public class MainActivity extends AppCompatActivity {
         if (adapter != null) {
           adapter.notifyDataSetChanged();
         }
-        //bluetoothAdapter.cancelDiscovery();
-      } else if (intent.getAction().equals(BluetoothDevice.ACTION_ACL_CONNECTED)) {
-        Timber.d("ACTION_ACL_CONNECTED");
-      } else if (intent.getAction().equals(BluetoothDevice.ACTION_ACL_DISCONNECTED)) {
-        Timber.d("ACTION_ACL_DISCONNECTED");
-      } else if (intent.getAction().equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)) {
-        Timber.d("ACTION_BOND_STATE_CHANGED");
       } else if (intent.getAction().equals(BluetoothAdapter.ACTION_DISCOVERY_STARTED)) {
-        Timber.d("Bluetooth Device discovery started");
+        Timber.d("ACTION_DISCOVERY_STARTED");
       } else if (intent.getAction().equals(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)) {
-        Timber.d("Bluetooth Device discovery finished");
-        startDiscovery();
+        Timber.d("ACTIon_DISCOVERY_FINISHED");
+        //startDiscovery();
       }
     }
   };
   IntentFilter deviceDiscoveryIntentFilter = new IntentFilter();
   String[] discoveryIntents = {
-      BluetoothDevice.ACTION_FOUND, BluetoothDevice.ACTION_ACL_CONNECTED,
-      BluetoothDevice.ACTION_ACL_DISCONNECTED, BluetoothDevice.ACTION_BOND_STATE_CHANGED,
-      BluetoothDevice.ACTION_CLASS_CHANGED, BluetoothAdapter.ACTION_DISCOVERY_STARTED,
+      BluetoothDevice.ACTION_FOUND, BluetoothAdapter.ACTION_DISCOVERY_STARTED,
       BluetoothAdapter.ACTION_DISCOVERY_FINISHED
   };
-
-  private Handler discoveryHandler = new Handler();
-  private Runnable discoveryRunnable = new Runnable() {
-    @Override public void run() {
-      //startDiscovery();
-    }
-  };
-
-  private boolean startDiscovery = true;
 
   private void startDiscovery() {
     Timber.d("StartDiscovery");
@@ -143,22 +154,10 @@ public class MainActivity extends AppCompatActivity {
     }
   }
 
-  private class AcceptSocketThread extends Thread {
-    @Override public void run() {
-      try {
-        BluetoothSocket bluetoothSocket = serverSocket.accept();
-      } catch (IOException e) {
-        Timber.e("Unable to accept the socket");
-        e.printStackTrace();
-      }
-    }
-  }
-
   /**
    * Device finding and
    * getting state of the bluetooth
    */
-  private BluetoothDevice myBluetoothDevice;
 
   private void bluetoothTest() {
     bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -221,39 +220,36 @@ public class MainActivity extends AppCompatActivity {
    * possible values in extra fields like STATE_TURNING_ON,STATE_ON and so on
    * STATE_TURNING_OFF,STATE_OFF
    */
-  private String[] actions = {
-      BluetoothAdapter.ACTION_STATE_CHANGED, BluetoothAdapter.ACTION_DISCOVERY_STARTED,
-      BluetoothAdapter.ACTION_DISCOVERY_FINISHED, BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED
+  private String[] bluetoothActions = {
+      BluetoothAdapter.ACTION_STATE_CHANGED,
   };
 
   private void listenForBluetoothStateChanges() {
-    for (String action : actions)
+    for (String action : bluetoothActions)
       intentFilter.addAction(action);
     //need to add a boolean value to indicate
-    for (String action : discoveryIntents)
+    for (String action : discoveryIntents) {
       deviceDiscoveryIntentFilter.addAction(action);
+    }
     // whether it is registered or not
     registerReceiver(bluetoothBR, intentFilter);
     //for discovering devices
     registerReceiver(deviceDiscoveryBR, deviceDiscoveryIntentFilter);
+
+    getPairedDevices();
     /**
      * The above will only work when
      *  we call start discovery else it won't work
      */
     startDiscovery();
-    getPairedDevices();
-
-    //create a server
-    //createServer();
   }
 
   @Override protected void onPause() {
     super.onPause();
+    Timber.d("onPause()");
     try {
       unregisterReceiver(bluetoothBR);
       unregisterReceiver(deviceDiscoveryBR);
-      discoveryHandler.removeCallbacks(discoveryRunnable);
-      //serverSocket.close();
     } catch (Exception e) {
       e.printStackTrace();
     }
