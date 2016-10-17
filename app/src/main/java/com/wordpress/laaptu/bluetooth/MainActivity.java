@@ -18,13 +18,16 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.Manifest;
+import java.util.logging.Handler;
 import timber.log.Timber;
 
 import static android.R.attr.data;
+import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -72,7 +75,6 @@ public class MainActivity extends AppCompatActivity {
       default:
         break;
     }
-
   }
 
   private void init() {
@@ -120,6 +122,10 @@ public class MainActivity extends AppCompatActivity {
         Timber.d("ACTION_DISCOVERY_STARTED");
       } else if (intent.getAction().equals(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)) {
         Timber.d("ACTIon_DISCOVERY_FINISHED");
+        /**
+         * In Nexus 5, Android L, calling
+         * startDiscovery() moves the activity
+         * to onPause() : Interesting*/
         //startDiscovery();
       }
     }
@@ -132,6 +138,8 @@ public class MainActivity extends AppCompatActivity {
 
   private void startDiscovery() {
     Timber.d("StartDiscovery");
+    /**
+     * Seems like startDiscovery is too much resource consuming*/
     if (bluetoothAdapter.isDiscovering()) bluetoothAdapter.cancelDiscovery();
     bluetoothAdapter.startDiscovery();
   }
@@ -209,6 +217,9 @@ public class MainActivity extends AppCompatActivity {
             break;
           case BluetoothAdapter.STATE_OFF:
             Timber.d("Bluetooth state = state off");
+            /**
+             * Here we need to close any ongoing task,notify user to again on the bluetooth
+             * or else automatically on the bluetooth, depending upon the need*/
             break;
         }
       }
@@ -250,9 +261,19 @@ public class MainActivity extends AppCompatActivity {
     try {
       unregisterReceiver(bluetoothBR);
       unregisterReceiver(deviceDiscoveryBR);
+      if (bluetoothAdapter != null && bluetoothAdapter.isDiscovering()) {
+        bluetoothAdapter.cancelDiscovery();
+      }
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  @Override protected void onResume() {
+    super.onResume();
+    /**
+     * Need to find what actions to be done on Resume()
+     * as our broadcast recievers is unregistered*/
   }
 
   @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -286,18 +307,24 @@ public class MainActivity extends AppCompatActivity {
    */
 
   private class RecyclerAdapter extends RecyclerView.Adapter<ViewHolderMain> {
+
     @Override public ViewHolderMain onCreateViewHolder(ViewGroup parent, int viewType) {
-      View view = getLayoutInflater().inflate(android.R.layout.simple_list_item_1, parent, false);
+      View view = getLayoutInflater().inflate(R.layout.list_item, parent, false);
       return new ViewHolderMain(view);
     }
 
     @Override public void onBindViewHolder(ViewHolderMain holder, int position) {
-      BluetoothDevice device = devices[position];
+      final BluetoothDevice device = devices[position];
       String name = "";
       if (device != null) {
         name = device.getName() == null ? name : device.getName();
         holder.textView.setText(name.concat("::").concat(device.getAddress()));
       }
+      holder.textView.setOnClickListener(new View.OnClickListener() {
+        @Override public void onClick(View v) {
+          onClickItem.onClicked(device);
+        }
+      });
     }
 
     @Override public int getItemCount() {
@@ -310,8 +337,18 @@ public class MainActivity extends AppCompatActivity {
 
     public ViewHolderMain(View itemView) {
       super(itemView);
-      textView = (TextView) itemView.findViewById(android.R.id.text1);
+      textView = (TextView) itemView.findViewById(R.id.txt_name);
     }
   }
+
+  public interface OnClickItem<T> {
+    void onClicked(T object);
+  }
+
+  private OnClickItem<BluetoothDevice> onClickItem = new OnClickItem<BluetoothDevice>() {
+    @Override public void onClicked(BluetoothDevice bluetoothDevice) {
+      Toast.makeText(MainActivity.this, bluetoothDevice.getAddress(), Toast.LENGTH_SHORT).show();
+    }
+  };
 }
 
