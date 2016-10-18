@@ -2,6 +2,8 @@ package com.wordpress.laaptu.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothServerSocket;
+import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -19,15 +21,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.jar.Manifest;
-import java.util.logging.Handler;
+import java.util.UUID;
 import timber.log.Timber;
-
-import static android.R.attr.data;
-import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -36,6 +36,161 @@ public class MainActivity extends AppCompatActivity {
     setContentView(R.layout.activity_main);
     initPermissions();
   }
+
+  /**
+   * Let us create  a server now
+   */
+  private CreateServerAndListenForConnectionThread createServerThread;
+
+  private void createServer() {
+    createServerThread = new CreateServerAndListenForConnectionThread();
+    createServerThread.start();
+  }
+
+  /**
+   * This thread requires bluetoothAdapter
+   * as bluetoothAdapter is needed for creating a server.
+   * Say server creation is like making a unique url
+   * and listening for any incoming message
+   */
+
+  static final String SERVER_NAME = "CHAT";
+  static final UUID SERVER_UUID = UUID.randomUUID();
+
+  private class CreateServerAndListenForConnectionThread extends Thread {
+    private final BluetoothServerSocket serverSocket;
+    private boolean run = true;
+
+    public CreateServerAndListenForConnectionThread() {
+      BluetoothServerSocket tmp = null;
+      try {
+        tmp = bluetoothAdapter.listenUsingRfcommWithServiceRecord(SERVER_NAME, SERVER_UUID);
+      } catch (Exception e) {
+        Timber.d("Unable to create a server ");
+        e.printStackTrace();
+      }
+      if(tmp !=null)
+         Timber.d("Server created successfully");
+      serverSocket = tmp;
+    }
+
+    @Override public void run() {
+      super.run();
+      BluetoothSocket socket = null;
+
+      while (run) {
+        try {
+          Timber.d("Server is running successfully");
+          socket = serverSocket.accept();
+          Timber.d("Socket created successfully i.e. someone is requesting for connection");
+        } catch (IOException e) {
+          Timber.e("Socket creationg problem");
+          e.printStackTrace();
+        }
+        if (socket != null) {
+          connectedIncomingSocketToOurServer(socket);
+          cancel();
+        }
+      }
+    }
+
+    public void cancel() {
+      run = false;
+      try {
+        serverSocket.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  private void connectedIncomingSocketToOurServer(BluetoothSocket socket) {
+    //for now this runs on ServerThread
+    Timber.d("Connection request from:  %s to our server. We are server ",
+        socket.getRemoteDevice().getName());
+  }
+
+  private void connectedToServerOurSocket(BluetoothSocket ourSocket) {
+    Timber.d("Our socket is now connected to remote server. We are client");
+  }
+
+  private ConnectToServerThread connectToServerThread;
+
+  private void connectToServer(BluetoothDevice serverDevice) {
+    if (connectToServerThread != null) {
+      connectToServerThread.cancel();
+      //connectToServerThread.interrupt();
+    }
+    connectToServerThread = new ConnectToServerThread(serverDevice);
+    connectToServerThread.start();
+  }
+
+  /**
+   * For this to work, there must be server with UUID already present.
+   * Seems like UUID is a network.
+   * A bluetoothSocket tries to make connection with the
+   * bluetoothServer Socket
+   * So, this seems like client side implementation
+   */
+  private class ConnectToServerThread extends Thread {
+    private BluetoothSocket socketTobePassedToServer;
+    private final BluetoothDevice serverBluetoothDevice;
+
+    public ConnectToServerThread(BluetoothDevice device) {
+      BluetoothSocket tmp = null;
+      serverBluetoothDevice = device;
+      try {
+        tmp = device.createRfcommSocketToServiceRecord(SERVER_UUID);
+      } catch (Exception e) {
+        Timber.e("Cannot create socket that needs to be passed to the server, going for fallback socket");
+        e.printStackTrace();
+
+      }
+      socketTobePassedToServer = tmp;
+    }
+
+    @Override public void run() {
+      super.run();
+      //cancel discovery as startDiscovery() by itself is resource intensive
+      bluetoothAdapter.cancelDiscovery();
+      try {
+        //here this socket is now trying to connect to the server
+        socketTobePassedToServer.connect();
+      } catch (Exception e) {
+        Timber.e("Cannot connect to the server,using fallback socket");
+        e.printStackTrace();
+        try {
+          /**
+           * Why this is to be done.
+           * No idea
+           * http://stackoverflow.com/questions/18657427/ioexception-read-failed-socket-might-closed-bluetooth-on-android-4-3/18786701#18786701*/
+
+          socketTobePassedToServer = (BluetoothSocket) serverBluetoothDevice.getClass().getMethod("createRfcommSocket",
+              new Class[]{int.class}).invoke(serverBluetoothDevice,1);
+        } catch (Exception exception) {
+          exception.printStackTrace();
+          try {
+            socketTobePassedToServer.close();
+          } catch (IOException e1) {
+            e1.printStackTrace();
+          }
+          return;
+        }
+
+
+      }
+      connectedToServerOurSocket(socketTobePassedToServer);
+    }
+
+    public void cancel() {
+      try {
+        socketTobePassedToServer.close();
+      } catch (IOException e1) {
+        e1.printStackTrace();
+      }
+    }
+  }
+  //-------------------------------------------------
 
   String[] permissions = { android.Manifest.permission.ACCESS_COARSE_LOCATION };
   ArrayList<String> permissionNotGranted = new ArrayList<>();
@@ -127,6 +282,7 @@ public class MainActivity extends AppCompatActivity {
          * startDiscovery() moves the activity
          * to onPause() : Interesting*/
         //startDiscovery();
+        if (discoveredDevices.size() > 0) createServer();
       }
     }
   };
@@ -348,6 +504,8 @@ public class MainActivity extends AppCompatActivity {
   private OnClickItem<BluetoothDevice> onClickItem = new OnClickItem<BluetoothDevice>() {
     @Override public void onClicked(BluetoothDevice bluetoothDevice) {
       Toast.makeText(MainActivity.this, bluetoothDevice.getAddress(), Toast.LENGTH_SHORT).show();
+      //createServer(bluetoothDevice);
+      connectToServer(bluetoothDevice);
     }
   };
 }
