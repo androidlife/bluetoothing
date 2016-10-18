@@ -17,8 +17,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.InputType;
+import android.text.TextUtils;
+import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.io.IOException;
@@ -32,8 +37,11 @@ import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
 
-  String addressNexus6 ="F8:CF:C5:D4:7D:32"
-      ,addressNexus5="CC:FA:00:52:DA:19";
+  String addressNexus6 = "F8:CF:C5:D4:7D:32", addressNexus5 = "CC:FA:00:52:DA:19";
+
+  private EditText txtSend;
+  private Button btnSend;
+  private TextView txtChat;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -41,6 +49,27 @@ public class MainActivity extends AppCompatActivity {
     initPermissions();
   }
 
+  /**
+   * Initiating chat between two
+   */
+  private void sendChatText() {
+    String chatText = txtSend.getText().toString();
+    if (!TextUtils.isEmpty(chatText)) {
+
+    }
+  }
+
+  private void enableChatViews() {
+    btnSend.setEnabled(true);
+    txtSend.setEnabled(true);
+    setTitle(serverSocket==null?"Server":"Client");
+  }
+
+  private void setTitle(String title) {
+    if (getSupportActionBar() != null) getSupportActionBar().setTitle(title);
+  }
+
+  //#################################
   /**
    * Let us create  a server now
    */
@@ -50,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
     createServerThread = new CreateServerAndListenForConnectionThread();
     createServerThread.start();
   }
+
   private void connectToServer(BluetoothDevice serverDevice) {
     //if (connectToServerThread != null) {
     //  connectToServerThread.cancel();
@@ -78,7 +108,6 @@ public class MainActivity extends AppCompatActivity {
       BluetoothServerSocket tmp = null;
       try {
         tmp = bluetoothAdapter.listenUsingRfcommWithServiceRecord(SERVER_NAME, SERVER_UUID);
-
       } catch (Exception e) {
         Timber.d("Unable to create a server ");
         e.printStackTrace();
@@ -134,6 +163,8 @@ public class MainActivity extends AppCompatActivity {
     }
   }
 
+  private BluetoothSocket serverSocket, clientSocket;
+
   private void connectedIncomingSocketToOurServer(final BluetoothSocket socket) {
     //for now this runs on ServerThread
     Timber.d("Connection request from:  %s to our server. We are server ",
@@ -143,24 +174,26 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(MainActivity.this,
             "We are server and we are connected to " + socket.getRemoteDevice().getName(),
             Toast.LENGTH_LONG).show();
+        clientSocket = socket;
+        enableChatViews();
       }
     });
   }
 
-  private void connectedToServerOurSocket(BluetoothSocket ourSocket) {
+  private void connectedToServerOurSocket(final BluetoothSocket ourSocket) {
     Timber.d("Our socket is now connected to remote server. We are client");
     runOnUiThread(new Runnable() {
       @Override public void run() {
         Toast.makeText(MainActivity.this,
             "Our socket is now connected to remote server. We are client", Toast.LENGTH_LONG)
             .show();
+        serverSocket = ourSocket;
+        enableChatViews();
       }
     });
   }
 
   private ConnectToServerThread connectToServerThread;
-
-
 
   /**
    * For this to work, there must be server with UUID already present.
@@ -168,6 +201,9 @@ public class MainActivity extends AppCompatActivity {
    * A bluetoothSocket tries to make connection with the
    * bluetoothServer Socket
    * So, this seems like client side implementation
+   * This is just the serverSocket where we
+   * request for connection
+   * Once server accepts the connection, it will hold the client socket
    */
   private class ConnectToServerThread extends Thread {
     private BluetoothSocket socketTobePassedToServer;
@@ -183,8 +219,7 @@ public class MainActivity extends AppCompatActivity {
             "Cannot create socket that needs to be passed to the server, going for fallback socket");
         e.printStackTrace();
       }
-      if(tmp !=null)
-        Timber.d("Created socket to be passed to server without reflection");
+      if (tmp != null) Timber.d("Created socket to be passed to server without reflection");
       socketTobePassedToServer = tmp;
     }
 
@@ -204,8 +239,7 @@ public class MainActivity extends AppCompatActivity {
         Timber.e("Cannot create socket that needs to be passed to the server");
         e.printStackTrace();
       }
-      if(tmp !=null)
-          Timber.d("Created socket to be passed to server using reflection");
+      if (tmp != null) Timber.d("Created socket to be passed to server using reflection");
       socketTobePassedToServer = tmp;
     }
 
@@ -219,12 +253,12 @@ public class MainActivity extends AppCompatActivity {
       } catch (Exception e) {
         Timber.e("Cannot connect to the server,using fallback socket");
         e.printStackTrace();
-          try {
-            socketTobePassedToServer.close();
-          } catch (IOException e1) {
-            e1.printStackTrace();
-          }
-          return;
+        try {
+          socketTobePassedToServer.close();
+        } catch (IOException e1) {
+          e1.printStackTrace();
+        }
+        return;
       }
       connectedToServerOurSocket(socketTobePassedToServer);
     }
@@ -291,6 +325,16 @@ public class MainActivity extends AppCompatActivity {
     recyclerView.setLayoutManager(linearLayoutManager);
     adapter = new RecyclerAdapter();
     recyclerView.setAdapter(adapter);
+
+    txtChat = (TextView) findViewById(R.id.chat_txt);
+    txtChat.setMovementMethod(new ScrollingMovementMethod());
+    txtSend = (EditText) findViewById(R.id.send_txt);
+    btnSend = (Button) findViewById(R.id.btn_send);
+    btnSend.setOnClickListener(new View.OnClickListener() {
+      @Override public void onClick(View v) {
+        sendChatText();
+      }
+    });
   }
 
   BluetoothAdapter bluetoothAdapter;
@@ -460,8 +504,9 @@ public class MainActivity extends AppCompatActivity {
     startDiscovery();
     connectToNexus6();
   }
-  private void connectToNexus6(){
-      //connectToServer();
+
+  private void connectToNexus6() {
+    //connectToServer();
   }
 
   @Override protected void onPause() {
