@@ -27,11 +27,15 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Timer;
 import java.util.UUID;
 import timber.log.Timber;
 
@@ -52,17 +56,107 @@ public class MainActivity extends AppCompatActivity {
   /**
    * Initiating chat between two
    */
-  private void sendChatText() {
-    String chatText = txtSend.getText().toString();
-    if (!TextUtils.isEmpty(chatText)) {
 
+  private class SendMessageThread extends Thread {
+    private final BluetoothSocket socket;
+    private final InputStream inputStream;
+    private final OutputStream outputStream;
+    private boolean read = true;
+    String deviceName="";
+
+    public SendMessageThread(BluetoothSocket socket) {
+      this.socket = socket;
+      deviceName = socket.getRemoteDevice().getName();
+      InputStream inputStreamTmp = null;
+      OutputStream outputStreamTmp = null;
+      try {
+        inputStreamTmp = socket.getInputStream();
+        Timber.d("Input Stream accessed of socket");
+        outputStreamTmp = socket.getOutputStream();
+        Timber.d("Output stream accessed of socket");
+      } catch (IOException e) {
+        e.printStackTrace();
+        Timber.e("Unable to access input or output stream from socket");
+      }
+      inputStream = inputStreamTmp;
+      outputStream = outputStreamTmp;
+    }
+
+    @Override public void run() {
+      super.run();
+      byte[] buffer = new byte[1024];
+      int bytes;
+      while (read) {
+        try {
+          bytes = inputStream.read(buffer);
+          String value = new String(buffer,0,bytes);
+          publishMessage(deviceName.concat(": ").concat(value));
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+    }
+
+    public void write(byte[] bytes) {
+      try {
+        outputStream.write(bytes);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+
+    public void cancel() {
+      try {
+        socket.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+      read = false;
     }
   }
+
+  private void sendChatText() {
+    String chatText = txtSend.getText().toString();
+    if (!TextUtils.isEmpty(chatText) && sendMessageThread != null) {
+      byte[] send = chatText.getBytes();
+      sendMessageThread.write(send);
+      appendText("Me: ".concat(chatText));
+      txtSend.setText("");
+    }
+  }
+  private void publishMessage(final String text){
+    runOnUiThread(new Runnable() {
+      @Override public void run() {
+        appendText(text);
+      }
+    });
+  }
+
+  private void appendText(String text) {
+    txtChat.append(text.concat("\n"));
+  }
+
+  private SendMessageThread sendMessageThread;
+  private BluetoothSocket connectedSocket;
 
   private void enableChatViews() {
     btnSend.setEnabled(true);
     txtSend.setEnabled(true);
-    setTitle(serverSocket==null?"Server":"Client");
+    setTitle(serverSocket == null ? "Server" : "Client");
+    if (serverSocket != null) {
+      Timber.d(
+          "You are client and you are connected to server socket with name = %s and address =%s",
+          serverSocket.getRemoteDevice().getName(), serverSocket.getRemoteDevice().getAddress());
+      connectedSocket = serverSocket;
+    }
+    if (clientSocket != null) {
+      Timber.d(
+          "You are server and you are connected to a client socket with name = %s and address =%s",
+          clientSocket.getRemoteDevice().getName(), clientSocket.getRemoteDevice().getAddress());
+      connectedSocket = clientSocket;
+    }
+    sendMessageThread = new SendMessageThread(connectedSocket);
+    sendMessageThread.start();
   }
 
   private void setTitle(String title) {
