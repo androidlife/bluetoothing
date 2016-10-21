@@ -130,7 +130,17 @@ public class MainActivity extends AppCompatActivity {
         /**
          * In Nexus 5, Android L, calling
          * startDiscovery() moves the activity
-         * to onPause() : Interesting*/
+         * to onPause() : Interesting
+         * This is how I am planning to do
+         * There will be two set<BluetoothDevice>
+         *   A and B, and
+         *   A -> 1,2,3 which will be shown for first time
+         *   and later on
+         *   B -> 2,3
+         *   So we will find differnece A-B we will get 1 and this
+         *   will be our offline device
+         *   So total device will be 1,2,3,4 where
+         *   2,3,4 are online and 1 will be offline*/
         if (!firstTime) {
           devices = new BluetoothDevice[discoveredDevices.size()];
           discoveredDevices.toArray(devices);
