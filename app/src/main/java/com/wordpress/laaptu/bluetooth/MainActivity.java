@@ -96,6 +96,8 @@ public class MainActivity extends AppCompatActivity {
 
   Set<BluetoothDevice> connectedDevices = new HashSet<>();
   Set<BluetoothDevice> discoveredDevices = new HashSet<>();
+  Set<BluetoothDevice> nextDiscoveredDevices = new HashSet<>();
+  boolean firstTime = true;
   /**
    * This will only work
    * when bluetoothAdapter startDiscovery() is called
@@ -113,20 +115,31 @@ public class MainActivity extends AppCompatActivity {
         Timber.d("Discovered device = %s and its address = %s", device.getName(),
             device.getAddress());
         discoveredDevices.add(device);
-        devices = new BluetoothDevice[discoveredDevices.size()];
-        discoveredDevices.toArray(devices);
-        if (adapter != null) {
-          adapter.notifyDataSetChanged();
+        if (firstTime) {
+          devices = new BluetoothDevice[discoveredDevices.size()];
+          discoveredDevices.toArray(devices);
+          if (adapter != null) {
+            adapter.notifyDataSetChanged();
+          }
         }
       } else if (intent.getAction().equals(BluetoothAdapter.ACTION_DISCOVERY_STARTED)) {
         Timber.d("ACTION_DISCOVERY_STARTED");
+        discoveredDevices.clear();
       } else if (intent.getAction().equals(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)) {
         Timber.d("ACTIon_DISCOVERY_FINISHED");
         /**
          * In Nexus 5, Android L, calling
          * startDiscovery() moves the activity
          * to onPause() : Interesting*/
-        //startDiscovery();
+        if (!firstTime) {
+          devices = new BluetoothDevice[discoveredDevices.size()];
+          discoveredDevices.toArray(devices);
+          if (adapter != null) {
+            adapter.notifyDataSetChanged();
+          }
+        }
+        firstTime = false;
+        startDiscovery();
       }
     }
   };
