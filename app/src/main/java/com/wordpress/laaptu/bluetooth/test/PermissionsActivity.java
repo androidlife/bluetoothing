@@ -2,6 +2,7 @@ package com.wordpress.laaptu.bluetooth.test;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -9,6 +10,8 @@ import android.support.v4.app.ActivityCompat;
 import android.widget.Toast;
 
 import com.wordpress.laaptu.bluetooth.R;
+import com.wordpress.laaptu.bluetooth.test.base.BluetoothDeviceActivator;
+import com.wordpress.laaptu.bluetooth.test.base.NetworkDeviceActivator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +21,9 @@ import java.util.List;
  * Should be implemented by activities that needs to ask for permissions to the user
  * All permissions needed in the app is asked with this activity
  */
-public class PermissionsActivity extends Activity {
+public class PermissionsActivity extends Activity implements NetworkDeviceActivator.NetworkDeviceActivationListener {
     private static final int REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS = 1001;
+    public static final int RETURN_FROM_CONNECT = 1002;
     // Required permissions' status
     private static final String[] permissionsRequired = {
             Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -28,10 +32,11 @@ public class PermissionsActivity extends Activity {
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
     };
 
+    private NetworkDeviceActivator deviceActivator;
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         askForAppPermissions();
     }
 
@@ -39,10 +44,38 @@ public class PermissionsActivity extends Activity {
      * Enabling the network device, that is
      * required for any communication
      */
+
     private void enableNetworkDevice() {
+        if (deviceActivator == null)
+            deviceActivator = new BluetoothDeviceActivator();
+        deviceActivator.checkDeviceActivation(this, this);
 
     }
 
+    @Override
+    public void onDeviceDeactivated() {
+        makeToastAndFinish("Network device must be activated for this app to run",true);
+    }
+
+    @Override
+    public void onDeviceActivated() {
+        //Toast.makeText(this, "Congratulation network device is activated", Toast.LENGTH_LONG).show();
+    }
+
+    private void makeToastAndFinish(String message, boolean finish) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        if (finish)
+            this.finish();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (deviceActivator != null)
+            deviceActivator.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RETURN_FROM_CONNECT)
+            enableNetworkDevice();
+    }
     /**
      * Runtime Permission check for Android 6 and above
      * .........Start
@@ -86,10 +119,11 @@ public class PermissionsActivity extends Activity {
                                            @NonNull int[] grantResults) {
         switch (requestCode) {
             case REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS:
-                if (!didUserGrantAllPermissions(grantResults))
-                    Toast.makeText(this, R.string.error_few_permission_granted, Toast.LENGTH_SHORT).show();
-                else
+                if (!didUserGrantAllPermissions(grantResults)) {
+                    makeToastAndFinish(getString(R.string.error_few_permission_granted),true);
+                } else {
                     enableNetworkDevice();
+                }
                 break;
             default:
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -110,6 +144,7 @@ public class PermissionsActivity extends Activity {
         }
         return true;
     }
+
     /**
      * Runtime Permission check for Android 6 and above
      * .........End
