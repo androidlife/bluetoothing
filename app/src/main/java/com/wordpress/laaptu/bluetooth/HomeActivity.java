@@ -17,7 +17,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.InputType;
 import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
@@ -26,20 +25,18 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.wordpress.laaptu.bluetooth.test.MainActivity;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Timer;
 import java.util.UUID;
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity {
+public class HomeActivity extends AppCompatActivity {
 
   String addressNexus6 = "F8:CF:C5:D4:7D:32", addressNexus5 = "CC:FA:00:52:DA:19";
 
@@ -48,9 +45,15 @@ public class MainActivity extends AppCompatActivity {
   private TextView txtChat;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
+    super.onCreate(saveInstanceState);
     setContentView(R.layout.activity_main);
+    if (true) goToMainActivity();
     initPermissions();
+  }
+
+  private void goToMainActivity() {
+    startActivity(new Intent(this, MainActivity.class));
+    this.finish();
   }
 
   /**
@@ -62,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
     private final InputStream inputStream;
     private final OutputStream outputStream;
     private boolean read = true;
-    String deviceName="";
+    String deviceName = "";
 
     public SendMessageThread(BluetoothSocket socket) {
       this.socket = socket;
@@ -89,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
       while (read) {
         try {
           bytes = inputStream.read(buffer);
-          String value = new String(buffer,0,bytes);
+          String value = new String(buffer, 0, bytes);
           publishMessage(deviceName.concat(": ").concat(value));
         } catch (Exception e) {
           e.printStackTrace();
@@ -124,7 +127,8 @@ public class MainActivity extends AppCompatActivity {
       txtSend.setText("");
     }
   }
-  private void publishMessage(final String text){
+
+  private void publishMessage(final String text) {
     runOnUiThread(new Runnable() {
       @Override public void run() {
         appendText(text);
@@ -265,7 +269,7 @@ public class MainActivity extends AppCompatActivity {
         socket.getRemoteDevice().getName());
     runOnUiThread(new Runnable() {
       @Override public void run() {
-        Toast.makeText(MainActivity.this,
+        Toast.makeText(HomeActivity.this,
             "We are server and we are connected to " + socket.getRemoteDevice().getName(),
             Toast.LENGTH_LONG).show();
         clientSocket = socket;
@@ -278,7 +282,7 @@ public class MainActivity extends AppCompatActivity {
     Timber.d("Our socket is now connected to remote server. We are client");
     runOnUiThread(new Runnable() {
       @Override public void run() {
-        Toast.makeText(MainActivity.this,
+        Toast.makeText(HomeActivity.this,
             "Our socket is now connected to remote server. We are client", Toast.LENGTH_LONG)
             .show();
         serverSocket = ourSocket;
@@ -695,7 +699,7 @@ public class MainActivity extends AppCompatActivity {
 
   private OnClickItem<BluetoothDevice> onClickItem = new OnClickItem<BluetoothDevice>() {
     @Override public void onClicked(BluetoothDevice bluetoothDevice) {
-      Toast.makeText(MainActivity.this, bluetoothDevice.getAddress(), Toast.LENGTH_SHORT).show();
+      Toast.makeText(HomeActivity.this, bluetoothDevice.getAddress(), Toast.LENGTH_SHORT).show();
       //createServer(bluetoothDevice);
       connectToServer(bluetoothDevice);
     }
