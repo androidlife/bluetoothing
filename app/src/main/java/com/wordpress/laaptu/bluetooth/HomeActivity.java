@@ -45,7 +45,7 @@ public class HomeActivity extends AppCompatActivity {
   private TextView txtChat;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(saveInstanceState);
+    super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
     if (true) goToMainActivity();
     initPermissions();
@@ -440,6 +440,8 @@ public class HomeActivity extends AppCompatActivity {
 
   Set<BluetoothDevice> connectedDevices = new HashSet<>();
   Set<BluetoothDevice> discoveredDevices = new HashSet<>();
+  Set<BluetoothDevice> nextDiscoveredDevices = new HashSet<>();
+  boolean firstTime = true;
   /**
    * This will only work
    * when bluetoothAdapter startDiscovery() is called
@@ -457,13 +459,16 @@ public class HomeActivity extends AppCompatActivity {
         Timber.d("Discovered device = %s and its address = %s", device.getName(),
             device.getAddress());
         discoveredDevices.add(device);
-        devices = new BluetoothDevice[discoveredDevices.size()];
-        discoveredDevices.toArray(devices);
-        if (adapter != null) {
-          adapter.notifyDataSetChanged();
+        if (firstTime) {
+          devices = new BluetoothDevice[discoveredDevices.size()];
+          discoveredDevices.toArray(devices);
+          if (adapter != null) {
+            adapter.notifyDataSetChanged();
+          }
         }
       } else if (intent.getAction().equals(BluetoothAdapter.ACTION_DISCOVERY_STARTED)) {
         Timber.d("ACTION_DISCOVERY_STARTED");
+        discoveredDevices.clear();
       } else if (intent.getAction().equals(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)) {
         Timber.d("ACTIon_DISCOVERY_FINISHED");
         /**
@@ -473,6 +478,27 @@ public class HomeActivity extends AppCompatActivity {
          * and as a result, this intent will not be received as well*/
         //startDiscovery();
         //if (discoveredDevices.size() > 0) createServer();
+        /**
+         * This is how I am planning to do
+         * There will be two set<BluetoothDevice>
+         *   A and B, and
+         *   A -> 1,2,3 which will be shown for first time
+         *   and later on
+         *   B -> 2,3
+         *   So we will find differnece A-B we will get 1 and this
+         *   will be our offline device
+         *   So total device will be 1,2,3,4 where
+         *   2,3,4 are online and 1 will be offline*/
+        if (!firstTime) {
+          devices = new BluetoothDevice[discoveredDevices.size()];
+          discoveredDevices.toArray(devices);
+          if (adapter != null) {
+            adapter.notifyDataSetChanged();
+          }
+        }
+        firstTime = false;
+        startDiscovery();
+
       }
     }
   };
