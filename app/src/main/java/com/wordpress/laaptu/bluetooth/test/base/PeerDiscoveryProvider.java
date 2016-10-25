@@ -15,6 +15,8 @@ public interface PeerDiscoveryProvider {
 
     public void start();
 
+    void start(NetworkDeviceListener networkDeviceListener);
+
     public void stop();
 
     public void reload();
@@ -25,5 +27,5 @@ public interface PeerDiscoveryProvider {
 
     public void setAction(String action);
 
-    void start(NetworkDeviceListener networkDeviceListener);
+
 }

@@ -1,4 +1,4 @@
 <resources>
-  <string name="app_name">Bluetooth</string>
-  <string name="error_few_permission_granted">App won\'t perform well with few permissions.</string>
+    <string name="app_name">Bluetooth</string>
+    <string name="error_few_permission_granted">App won\'t perform well with few permissions.</string>
 </resources>

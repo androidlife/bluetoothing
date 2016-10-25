@@ -11,6 +11,8 @@ import android.content.IntentFilter;
 import com.wordpress.laaptu.bluetooth.test.base.DiscoveredPeer;
 import com.wordpress.laaptu.bluetooth.test.base.PeerDiscoveryProvider;
 
+import timber.log.Timber;
+
 /**
  */
 
@@ -19,6 +21,7 @@ public class BluetoothProvider implements PeerDiscoveryProvider {
     private final Activity activity;
     private IntentFilter bluetoothStateIntentFilter;
     private NetworkDeviceListener networkDeviceListener;
+    private BluetoothAdapter bluetoothAdapter;
 
     public BluetoothProvider(Activity activity) {
         this.activity = activity;
@@ -30,14 +33,13 @@ public class BluetoothProvider implements PeerDiscoveryProvider {
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
                 int bluetoothState = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1);
+                Timber.d("Bluetooth State changed =%d",bluetoothState);
                 switch (bluetoothState) {
                     case BluetoothAdapter.STATE_ON:
                         break;
                     case BluetoothAdapter.ERROR:
                     case BluetoothAdapter.STATE_OFF:
-                        if (networkDeviceListener != null)
-                            networkDeviceListener.onNetworkDeviceLost();
-                        stop();
+                        notifyAndStopAll();
                         break;
                     default:
                         break;
@@ -47,12 +49,26 @@ public class BluetoothProvider implements PeerDiscoveryProvider {
         }
     };
 
+    private void notifyAndStopAll(){
+        if (networkDeviceListener != null) {
+            networkDeviceListener.onNetworkDeviceLost();
+        }
+        stop();
+
+    }
+
     /**
      * PeerDiscoveryProvider methods
      * ....Starts
      */
     @Override
     public void start() {
+        if(bluetoothAdapter ==null)
+            bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if(bluetoothAdapter==null || !bluetoothAdapter.isEnabled()){
+            notifyAndStopAll();
+            return;
+        }
         bluetoothStateIntentFilter = new IntentFilter();
         bluetoothStateIntentFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
         activity.registerReceiver(bluetoothStateBR, bluetoothStateIntentFilter);
@@ -63,6 +79,7 @@ public class BluetoothProvider implements PeerDiscoveryProvider {
         this.networkDeviceListener = networkDeviceListener;
         start();
     }
+
 
     @Override
     public void stop() {

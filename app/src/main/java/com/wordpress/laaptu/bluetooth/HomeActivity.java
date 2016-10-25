@@ -26,6 +26,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.wordpress.laaptu.bluetooth.test.MainActivity;
+import com.wordpress.laaptu.bluetooth.test.TestActivity;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;

@@ -1,4 +1,4 @@
-package com.wordpress.laaptu.bluetooth.test;
+package com.wordpress.laaptu.bluetooth.test.connect;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -11,26 +11,59 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import com.wordpress.laaptu.bluetooth.R;
+import com.wordpress.laaptu.bluetooth.test.base.PeerDiscoveryProvider;
+import com.wordpress.laaptu.bluetooth.test.bluetooth.BluetoothProvider;
 
 import timber.log.Timber;
 
 import static android.R.style.Theme_Holo_Light_Panel;
 
-public class ConnectActivity extends AppCompatActivity {
+public class ConnectActivity extends AppCompatActivity implements PeerDiscoveryProvider.NetworkDeviceListener {
+
+    private OnlineFragment fragment;
+    private PeerDiscoveryProvider peerDiscoveryProvider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connect);
-        addDialogFragment();
+        addOnlineFragment();
+    }
+
+    private void addOnlineFragment() {
+        fragment = new OnlineFragment();
+        getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        Timber.d("I am paused");
+        Timber.d("Paused");
+        if (peerDiscoveryProvider != null) {
+            peerDiscoveryProvider.stop();
+            peerDiscoveryProvider = null;
+        }
+
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Timber.d("Resumed()");
+        peerDiscoveryProvider = new BluetoothProvider(this);
+        fragment.setProvider(peerDiscoveryProvider);
+        peerDiscoveryProvider.start(this);
+    }
+
+
+    @Override
+    public void onNetworkDeviceLost() {
+        Timber.e("Network device connection error. Maybe network device is powered off");
+        this.finish();
+    }
+
+
+    //--------UNNECESSARY PORTIONS
     private void addDialogFragment() {
         DialogFragment dialogFragment = new SomeDialogFragment();
         dialogFragment.show(getSupportFragmentManager(), "SomeDialog");

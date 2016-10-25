@@ -16,6 +16,8 @@ import com.wordpress.laaptu.bluetooth.test.base.NetworkDeviceActivator;
 import java.util.ArrayList;
 import java.util.List;
 
+import timber.log.Timber;
+
 /**
  * Base activity for asking permissions
  * Should be implemented by activities that needs to ask for permissions to the user
@@ -54,12 +56,14 @@ public class PermissionsActivity extends Activity implements NetworkDeviceActiva
 
     @Override
     public void onDeviceDeactivated() {
+        Timber.e("Network device is powered off");
         makeToastAndFinish("Network device must be activated for this app to run",true);
     }
 
     @Override
     public void onDeviceActivated() {
         //Toast.makeText(this, "Congratulation network device is activated", Toast.LENGTH_LONG).show();
+        Timber.d("Network device is powered on");
     }
 
     private void makeToastAndFinish(String message, boolean finish) {
