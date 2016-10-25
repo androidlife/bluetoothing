@@ -245,7 +245,7 @@ public class BluetoothProvider implements PeerDiscoveryProvider {
 
         @Override
         public String getName() {
-            return user.name;
+            return bluetoothDevice.getAddress();
         }
 
         @Override

@@ -19,14 +19,14 @@ public class PeerListAdapter extends ArrayAdapter<DiscoveredPeer> {
     private ArrayList<DiscoveredPeer> peerList;
 
     public PeerListAdapter(Activity activity) {
-        super(activity,0);
+        super(activity, 0);
         layoutInflater = LayoutInflater.from(activity);
         this.peerList = new ArrayList<>();
     }
 
-    public boolean addNewPeer(DiscoveredPeer peer){
-        if(!peerList.contains(peer)){
-            peerList.add(0,peer);
+    public boolean addNewPeer(DiscoveredPeer peer) {
+        if (!peerList.contains(peer)) {
+            peerList.add(0, peer);
             notifyDataSetChanged();
             return true;
         }
@@ -35,13 +35,12 @@ public class PeerListAdapter extends ArrayAdapter<DiscoveredPeer> {
 
     @Override
     public void add(DiscoveredPeer object) {
-        super.add(object);
-        peerList.add(object);
+        if (!peerList.contains(object))
+            peerList.add(object);
     }
 
     @Override
     public void remove(DiscoveredPeer object) {
-        super.remove(object);
         peerList.remove(object);
     }
 
@@ -55,6 +54,11 @@ public class PeerListAdapter extends ArrayAdapter<DiscoveredPeer> {
     @Override
     public DiscoveredPeer getItem(int position) {
         return peerList.get(position);
+    }
+
+    @Override
+    public int getCount() {
+        return peerList.size();
     }
 
     @Override
@@ -74,7 +78,7 @@ public class PeerListAdapter extends ArrayAdapter<DiscoveredPeer> {
             ImageView status = (ImageView) convertView.findViewById(R.id.contactStatus);
             ImageView contact = (ImageView) convertView.findViewById(R.id.contactPic);
             if (peer != null) {
-                contact.setImageResource(peer.getPicture());
+                //contact.setImageResource(peer.getPicture());
                 name.setText(peer.getName());
                 String statusText = peer.getStatus();
                 if (statusText.startsWith("Off")) {
