@@ -253,7 +253,7 @@ public class BluetoothProvider implements PeerDiscoveryProvider {
 
         @Override
         public String getName() {
-            return bluetoothDevice.getAddress();
+            return user.name;
         }
 
         @Override
@@ -269,6 +269,11 @@ public class BluetoothProvider implements PeerDiscoveryProvider {
         @Override
         public void connectTo(ConnectionListener connectionListener) {
 
+        }
+
+        @Override
+        public String getUniqueIdentifier() {
+            return bluetoothDevice.getAddress();
         }
 
         @Override

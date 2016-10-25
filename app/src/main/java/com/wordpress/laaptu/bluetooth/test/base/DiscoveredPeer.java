@@ -16,4 +16,5 @@ public interface DiscoveredPeer {
 	public void connectTo(ConnectionListener connectioListener);
 	public int getPriority();
 	public void release();
+	String getUniqueIdentifier();
 }

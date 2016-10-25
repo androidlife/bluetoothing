@@ -82,6 +82,7 @@ public class PeerListAdapter extends ArrayAdapter<DiscoveredPeer> {
         return 0;
     }
 
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
@@ -93,7 +94,7 @@ public class PeerListAdapter extends ArrayAdapter<DiscoveredPeer> {
             ImageView status = (ImageView) convertView.findViewById(R.id.contactStatus);
             ImageView contact = (ImageView) convertView.findViewById(R.id.contactPic);
             if (peer != null) {
-                //contact.setImageResource(peer.getPicture());
+                contact.setImageResource(peer.getPicture());
                 name.setText(peer.getName());
                 String statusText = peer.getStatus();
                 if (statusText.startsWith("Off")) {

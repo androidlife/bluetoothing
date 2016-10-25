@@ -187,5 +187,9 @@ public class OnlineFragment extends Fragment {
         public void release() {
         }
 
+        @Override
+        public String getUniqueIdentifier() {
+            return null;
+        }
     }
 }
