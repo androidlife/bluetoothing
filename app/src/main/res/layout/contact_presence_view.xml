@@ -1,0 +1,38 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/contactLayout"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/contactPic"
+        android:layout_width="@dimen/contact_pic_size"
+        android:layout_height="@dimen/contact_pic_size"
+        android:layout_alignBottom="@+id/contactName"
+        android:adjustViewBounds="true"
+        android:contentDescription="@string/user_pic_description"
+        android:paddingTop="10dp"
+        android:scaleType="fitStart"
+        android:src="@drawable/stream_1" />
+
+    <ImageView
+        android:id="@+id/contactStatus"
+        android:layout_width="@dimen/contact_status_size"
+        android:layout_height="@dimen/contact_status_size"
+        android:layout_centerVertical="true"
+        android:layout_margin="@dimen/main_activity_button_margin"
+        android:layout_toRightOf="@+id/contactPic"
+        android:contentDescription="@string/status_indicator_description"
+        android:src="@drawable/status_online" />
+
+    <TextView
+        android:id="@+id/contactName"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@+id/contactStatus"
+        android:padding="@dimen/main_activity_button_margin"
+        android:text=""
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textSize="@dimen/contact_name_size" />
+
+</RelativeLayout>

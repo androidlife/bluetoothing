@@ -19,6 +19,7 @@ public class MainActivity extends PermissionsActivity {
         setContentView(R.layout.activity_main2);
         btnGo =(Button)findViewById(R.id.btn_go);
         //btnGo.setEnabled(false);
+        goToChat(null);
     }
 
     @Override

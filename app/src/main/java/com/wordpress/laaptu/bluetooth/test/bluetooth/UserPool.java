@@ -2,6 +2,8 @@ package com.wordpress.laaptu.bluetooth.test.bluetooth;
 
 import android.content.Context;
 
+import com.wordpress.laaptu.bluetooth.R;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,26 +30,27 @@ public class UserPool {
     private static HashMap<String, User> userMap;
     private static ArrayList<User> unusedUsers;
     private static final User[] predefinedUsers = new User[]{
+            new User("User1", R.drawable.stream_1, R.drawable.stream_1),
+            new User("User2", R.drawable.stream_2, R.drawable.stream_2),
+            new User("User3", R.drawable.stream_3, R.drawable.stream_3),
+            new User("User5", R.drawable.stream_5, R.drawable.stream_5),
+            new User("User8", R.drawable.stream_8, R.drawable.stream_8),
+            new User("User9", R.drawable.stream_9, R.drawable.stream_9),
+            new User("User10", R.drawable.stream_10, R.drawable.stream_10),
 
     };
-//    private static final User me = new User("Me", R.drawable.user_me, R.drawable.user_me);
-
-    /*public static User getMe() {
-        return me;
-    }*/
-
     private static final User[] offlineUsers = new User[]{
-
+            new User("User6", R.drawable.stream_6, R.drawable.stream_6),
+            new User("User7", R.drawable.stream_7, R.drawable.stream_7),
     };
 
     public static User[] getOfflineUsers() {
         return offlineUsers;
     }
 
-    //private static final User busyUser = new User(LiveTouchApplication.getContext().getString(R.string.stream4), R.drawable.stream_4, R.drawable.stream_4);
-
+    private static final User busyUser = new User("User4", R.drawable.stream_4, R.drawable.stream_4);
     public static User getBusyUser() {
-        return null;
+        return busyUser;
     }
 
     static {

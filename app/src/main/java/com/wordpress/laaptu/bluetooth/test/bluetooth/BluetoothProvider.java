@@ -11,7 +11,10 @@ import android.content.IntentFilter;
 import com.wordpress.laaptu.bluetooth.test.base.DiscoveredPeer;
 import com.wordpress.laaptu.bluetooth.test.base.PeerDiscoveryProvider;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 
 import timber.log.Timber;
 
@@ -34,6 +37,7 @@ public class BluetoothProvider implements PeerDiscoveryProvider {
     private HashSet<BluetoothDevice> currentDevices, prevDevices;
     private static final int TOTAL_RETRY = 4;
     private int totalRetry;
+    private OnPeerDiscoveredListener listener;
 
     public BluetoothProvider(Activity activity) {
         this.activity = activity;
@@ -64,14 +68,15 @@ public class BluetoothProvider implements PeerDiscoveryProvider {
             //this is for first time
             //peer discovery lost ( prevDevices)
             // peer discovery found( currentDevices)
-            Timber.d("New Device discovered");
-            for(BluetoothDevice device:currentDevices)
-               Timber.d("Device id = %s",device.getAddress());
-            Timber.d("**********************");
+            if(listener !=null){
+                listener.onPeersLost(convertHashSetToCollection(prevDevices));
+                listener.onPeersDiscovered(convertHashSetToCollection(currentDevices));
+            }
+
         }
         Timber.d("No new device discovery");
-        for(BluetoothDevice device:currentDevices)
-            Timber.d("Device id = %s",device.getAddress());
+        for (BluetoothDevice device : currentDevices)
+            Timber.d("Device id = %s", device.getAddress());
         Timber.d("------------------------");
         prevDevices = new HashSet<>(currentDevices);
         currentDevices.clear();
@@ -86,6 +91,8 @@ public class BluetoothProvider implements PeerDiscoveryProvider {
             // but need to check whether that device is unique or not
             // if unique then only add
             Timber.d("First scan and device found =%s", device.getAddress());
+            if (listener != null)
+                listener.onSinglePeerDiscovered(new Peer(device));
         }
         currentDevices.add(device);
     }
@@ -173,13 +180,26 @@ public class BluetoothProvider implements PeerDiscoveryProvider {
 
         }
 
+
+        cancelBluetoothDiscovery();
+        if (listener != null) {
+            listener.onPeersLost(convertHashSetToCollection(prevDevices));
+            listener = null;
+        }
         currentDevices.clear();
         prevDevices.clear();
         currentDevices = null;
         prevDevices = null;
         totalRetry = 0;
+    }
 
-        cancelBluetoothDiscovery();
+    private Collection<DiscoveredPeer> convertHashSetToCollection(HashSet<BluetoothDevice> hashSet) {
+        Collection<DiscoveredPeer> peerList = new ArrayList<>(hashSet.size());
+        Iterator<BluetoothDevice> iterator = hashSet.iterator();
+        while (iterator.hasNext()) {
+            peerList.add(new Peer(iterator.next()));
+        }
+        return peerList;
     }
 
     @Override
@@ -194,7 +214,7 @@ public class BluetoothProvider implements PeerDiscoveryProvider {
 
     @Override
     public void setOnPeerDiscoveredListener(OnPeerDiscoveredListener listener) {
-
+        this.listener = listener;
     }
 
     @Override

@@ -5,7 +5,7 @@ import java.util.Collection;
 public interface PeerDiscoveryProvider {
     public interface OnPeerDiscoveredListener {
         public void onPeersDiscovered(Collection<DiscoveredPeer> discoveredPeers);
-
+        void onSinglePeerDiscovered(DiscoveredPeer discoveredPeer);
         public void onPeersLost(Collection<DiscoveredPeer> lostPeers);
     }
 
