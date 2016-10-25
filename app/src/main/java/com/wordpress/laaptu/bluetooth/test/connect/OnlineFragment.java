@@ -16,6 +16,7 @@ import com.wordpress.laaptu.bluetooth.test.base.DiscoveredPeer;
 import com.wordpress.laaptu.bluetooth.test.base.PeerDiscoveryProvider;
 import com.wordpress.laaptu.bluetooth.test.bluetooth.UserPool;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 
@@ -42,6 +43,7 @@ public class OnlineFragment extends Fragment {
     private PeerListAdapter peerAdapter;
     private PeerDiscoveryProvider.OnPeerDiscoveredListener peerListener;
     private PeerDiscoveryProvider discoveryProvider;
+    private ArrayList<DiscoveredPeer> staticPeers;
 
 
     @Nullable
@@ -72,6 +74,10 @@ public class OnlineFragment extends Fragment {
             peerAdapter = null;
         }
         peerListener = null;
+        if (staticPeers != null) {
+            staticPeers.clear();
+            staticPeers = null;
+        }
     }
 
     @Override
@@ -79,12 +85,14 @@ public class OnlineFragment extends Fragment {
         super.onResume();
         UserPool.setContext(getActivity());
         peerAdapter = new PeerListAdapter(getActivity());
-        peerAdapter.add(new StaticPeer(UserPool.getBusyUser(), "Busy", 3));
+        staticPeers =new ArrayList<>();
+        staticPeers.add(new StaticPeer(UserPool.getBusyUser(), "Busy", 3));
         UserPool.User[] offlineUsers = UserPool.getOfflineUsers();
         for (UserPool.User offlineUser : offlineUsers) {
-            peerAdapter.add(new StaticPeer(offlineUser, "Offline", 4));
+            staticPeers.add(new StaticPeer(offlineUser, "Offline", 4));
         }
 
+        peerAdapter.addAll(staticPeers);
 
         peerListener = new PeerDiscoveryProvider.OnPeerDiscoveredListener() {
             @Override
@@ -94,10 +102,9 @@ public class OnlineFragment extends Fragment {
                     activity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            for (DiscoveredPeer peer : discoveredPeers) {
-                                peerAdapter.remove(peer);
-                                peerAdapter.add(peer);
-                            }
+                            peerAdapter.clear();
+                            peerAdapter.addAll(discoveredPeers);
+                            peerAdapter.addAll(staticPeers);
                             peerAdapter.sort(peerComparator);
                             peerAdapter.notifyDataSetChanged();
                         }
@@ -114,18 +121,18 @@ public class OnlineFragment extends Fragment {
 
             @Override
             public void onPeersLost(final Collection<DiscoveredPeer> lostPeers) {
-                Activity activity = getActivity();
-                if (activity != null) {
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            for (DiscoveredPeer peer : lostPeers) {
-                                peerAdapter.remove(peer);
-                            }
-                            peerAdapter.notifyDataSetChanged();
-                        }
-                    });
-                }
+//                Activity activity = getActivity();
+//                if (activity != null) {
+//                    activity.runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            for (DiscoveredPeer peer : lostPeers) {
+//                                peerAdapter.remove(peer);
+//                            }
+//                            peerAdapter.notifyDataSetChanged();
+//                        }
+//                    });
+//                }
 
             }
         };

@@ -68,8 +68,13 @@ public class BluetoothProvider implements PeerDiscoveryProvider {
             //this is for first time
             //peer discovery lost ( prevDevices)
             // peer discovery found( currentDevices)
-            if(listener !=null){
-                listener.onPeersLost(convertHashSetToCollection(prevDevices));
+            /**
+             * This block of code is just added to check
+             * or refresh the list. Right now it is not used
+             * so later , if no referesh of list, in case ,
+             * it is not empty, then we can simply remove this*/
+            if (listener != null) {
+                //listener.onPeersLost(convertHashSetToCollection(prevDevices));
                 listener.onPeersDiscovered(convertHashSetToCollection(currentDevices));
             }
 
@@ -80,7 +85,10 @@ public class BluetoothProvider implements PeerDiscoveryProvider {
         Timber.d("------------------------");
         prevDevices = new HashSet<>(currentDevices);
         currentDevices.clear();
-        startDiscovery();
+        if (prevDevices.size() == 0)
+            startDiscovery();
+        else
+            cancelBluetoothDiscovery();
     }
 
     private void onBluetoothDeviceFound(Intent intent) {
@@ -91,7 +99,7 @@ public class BluetoothProvider implements PeerDiscoveryProvider {
             // but need to check whether that device is unique or not
             // if unique then only add
             Timber.d("First scan and device found =%s", device.getAddress());
-            if (listener != null)
+            if (listener != null && !currentDevices.contains(device))
                 listener.onSinglePeerDiscovered(new Peer(device));
         }
         currentDevices.add(device);

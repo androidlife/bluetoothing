@@ -13,6 +13,9 @@ import com.wordpress.laaptu.bluetooth.R;
 import com.wordpress.laaptu.bluetooth.test.base.DiscoveredPeer;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class PeerListAdapter extends ArrayAdapter<DiscoveredPeer> {
     private LayoutInflater layoutInflater;
@@ -21,22 +24,22 @@ public class PeerListAdapter extends ArrayAdapter<DiscoveredPeer> {
     public PeerListAdapter(Activity activity) {
         super(activity, 0);
         layoutInflater = LayoutInflater.from(activity);
-        this.peerList = new ArrayList<>();
+        peerList = new ArrayList<>();
     }
 
-    public boolean addNewPeer(DiscoveredPeer peer) {
-        if (!peerList.contains(peer)) {
-            peerList.add(0, peer);
-            notifyDataSetChanged();
-            return true;
-        }
-        return false;
+    @Override
+    public void addAll(Collection<? extends DiscoveredPeer> collection) {
+        peerList.addAll(collection);
+    }
+
+    @Override
+    public void clear() {
+        peerList.clear();
     }
 
     @Override
     public void add(DiscoveredPeer object) {
-        if (!peerList.contains(object))
-            peerList.add(object);
+        peerList.add(object);
     }
 
     @Override
@@ -45,9 +48,19 @@ public class PeerListAdapter extends ArrayAdapter<DiscoveredPeer> {
     }
 
     @Override
-    public long getItemId(int position) {
-        //TODO is this correct?
-        return position;
+    public void sort(Comparator<? super DiscoveredPeer> comparator) {
+        Collections.sort(peerList, comparator);
+    }
+
+    public synchronized void addNewPeer(DiscoveredPeer peer) {
+        remove(peer);
+        peerList.add(0, peer);
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public int getCount() {
+        return peerList.size();
     }
 
     @Nullable
@@ -57,9 +70,11 @@ public class PeerListAdapter extends ArrayAdapter<DiscoveredPeer> {
     }
 
     @Override
-    public int getCount() {
-        return peerList.size();
+    public long getItemId(int position) {
+        //TODO is this correct?
+        return position;
     }
+
 
     @Override
     public int getItemViewType(int position) {
