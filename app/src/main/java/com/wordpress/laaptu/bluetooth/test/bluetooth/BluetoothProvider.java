@@ -3,6 +3,7 @@ package com.wordpress.laaptu.bluetooth.test.bluetooth;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -21,7 +22,7 @@ import timber.log.Timber;
 /**
  */
 
-public class BluetoothProvider implements PeerDiscoveryProvider {
+public class BluetoothProvider implements PeerDiscoveryProvider, BluetoothClientServer.OnClientServerListener {
 
     private final Activity activity;
     private IntentFilter bluetoothStateIntentFilter;
@@ -38,6 +39,8 @@ public class BluetoothProvider implements PeerDiscoveryProvider {
     private static final int TOTAL_RETRY = 4;
     private int totalRetry;
     private OnPeerDiscoveredListener listener;
+    private boolean scanFinished = false;
+    private BluetoothClientServer bluetoothClientServer;
 
     public BluetoothProvider(Activity activity) {
         this.activity = activity;
@@ -87,8 +90,10 @@ public class BluetoothProvider implements PeerDiscoveryProvider {
         currentDevices.clear();
         if (prevDevices.size() == 0)
             startDiscovery();
-        else
+        else {
+            setScanFinished(true);
             cancelBluetoothDiscovery();
+        }
     }
 
     private void onBluetoothDeviceFound(Intent intent) {
@@ -100,10 +105,11 @@ public class BluetoothProvider implements PeerDiscoveryProvider {
             // if unique then only add
             Timber.d("First scan and device found =%s", device.getAddress());
             if (listener != null && !currentDevices.contains(device))
-                listener.onSinglePeerDiscovered(new Peer(device));
+                listener.onSinglePeerDiscovered(new Peer(this, device));
         }
         currentDevices.add(device);
     }
+
 
     private void startDiscovery() {
         cancelBluetoothDiscovery();
@@ -152,6 +158,10 @@ public class BluetoothProvider implements PeerDiscoveryProvider {
      */
     @Override
     public void start() {
+        setScanFinished(false);
+        bluetoothClientServer = new BluetoothClientServer();
+        bluetoothClientServer.start(this);
+
         if (bluetoothAdapter == null)
             bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
@@ -178,9 +188,17 @@ public class BluetoothProvider implements PeerDiscoveryProvider {
         start();
     }
 
+    private void setScanFinished(boolean scanFinished) {
+        this.scanFinished = scanFinished;
+    }
 
     @Override
     public void stop() {
+        setScanFinished(true);
+        if (bluetoothClientServer != null) {
+            bluetoothClientServer.stop();
+            bluetoothClientServer = null;
+        }
         networkDeviceListener = null;
         try {
             activity.unregisterReceiver(bluetoothStateBR);
@@ -207,7 +225,7 @@ public class BluetoothProvider implements PeerDiscoveryProvider {
         Collection<DiscoveredPeer> peerList = new ArrayList<>(hashSet.size());
         Iterator<BluetoothDevice> iterator = hashSet.iterator();
         while (iterator.hasNext()) {
-            peerList.add(new Peer(iterator.next()));
+            peerList.add(new Peer(this,iterator.next()));
         }
         return peerList;
     }
@@ -232,20 +250,75 @@ public class BluetoothProvider implements PeerDiscoveryProvider {
 
     }
 
+    /**
+     * OnClientServerListener methods
+     * ....Starts
+     */
+
+    @Override
+    public void onError(int errorCode) {
+
+    }
+
+    //called from server client class
+    @Override
+    public void pauseDiscovery(boolean pause) {
+        if (!scanFinished) {
+            if (pause)
+                cancelBluetoothDiscovery();
+            else
+                startDiscovery();
+        }
+
+    }
+
+
+    @Override
+    public void onConnectionAccept(BluetoothSocket bluetoothSocket) {
+        if (connectionListener != null)
+            connectionListener.onAccepted();
+
+    }
+
+    @Override
+    public void onConnectionReject() {
+        if (connectionListener != null)
+            connectionListener.onDeclined();
+
+    }
+
+    private DiscoveredPeer.ConnectionListener connectionListener;
+
+    private void connectTo(BluetoothDevice bluetoothDevice, DiscoveredPeer.ConnectionListener connectionListener) {
+        this.connectionListener = connectionListener;
+        if (bluetoothClientServer != null) {
+            bluetoothClientServer.connectTo(bluetoothDevice);
+        } else {
+            connectionListener.onDeclined();
+        }
+    }
+
+    /**
+     * OnClientServerListener methods
+     * ....Ends
+     */
+
 
     /**
      * PeerDiscoveryProvider methods
-     * ....Ends
+     * ....Starts
      */
 
     private static class Peer implements DiscoveredPeer {
 
         private UserPool.User user;
         private BluetoothDevice bluetoothDevice;
+        private BluetoothProvider bluetoothProvider;
 
-        Peer(BluetoothDevice bluetoothDevice) {
+        Peer(BluetoothProvider bluetoothProvider, BluetoothDevice bluetoothDevice) {
             user = UserPool.getUserByName(bluetoothDevice.getAddress());
             this.bluetoothDevice = bluetoothDevice;
+            this.bluetoothProvider = bluetoothProvider;
         }
 
         /**
@@ -270,7 +343,7 @@ public class BluetoothProvider implements PeerDiscoveryProvider {
 
         @Override
         public void connectTo(ConnectionListener connectionListener) {
-
+            bluetoothProvider.connectTo(bluetoothDevice, connectionListener);
         }
 
         @Override

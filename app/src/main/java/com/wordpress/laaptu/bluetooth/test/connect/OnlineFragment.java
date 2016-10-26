@@ -184,7 +184,19 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
 
     @Override
     public void onItemClicked(DiscoveredPeer peer) {
-        Timber.d("Clicked peer name =%s and address =%s",peer.getName(),peer.getUniqueIdentifier());
+        Timber.d("Clicked peer name =%s and address =%s", peer.getName(), peer.getUniqueIdentifier());
+        //TODO to add
+        peer.connectTo(new DiscoveredPeer.ConnectionListener() {
+            @Override
+            public void onAccepted() {
+
+            }
+
+            @Override
+            public void onDeclined() {
+
+            }
+        });
     }
 
     //NOT IMPORTANT RIGHT NOW
