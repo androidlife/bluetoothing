@@ -5,6 +5,7 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +15,7 @@ import android.widget.ListView;
 import com.wordpress.laaptu.bluetooth.R;
 import com.wordpress.laaptu.bluetooth.test.base.DiscoveredPeer;
 import com.wordpress.laaptu.bluetooth.test.base.PeerDiscoveryProvider;
+import com.wordpress.laaptu.bluetooth.test.bitmaps.loaders.ImageFetcher;
 import com.wordpress.laaptu.bluetooth.test.bluetooth.UserPool;
 
 import java.util.ArrayList;
@@ -27,7 +29,7 @@ import java.util.Comparator;
 public class OnlineFragment extends Fragment {
 
 
-    private ListView contactList;
+    private RecyclerView contactList;
     private final Comparator<DiscoveredPeer> peerComparator = new Comparator<DiscoveredPeer>() {
 
         @Override
@@ -44,13 +46,17 @@ public class OnlineFragment extends Fragment {
     private PeerDiscoveryProvider.OnPeerDiscoveredListener peerListener;
     private PeerDiscoveryProvider discoveryProvider;
     private ArrayList<DiscoveredPeer> staticPeers;
+    private ImageFetcher imageFetcher;
 
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_online, container, false);
-        contactList = (ListView) view.findViewById(R.id.contactsView);
+        contactList = (RecyclerView) view.findViewById(R.id.recycler_view);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(view.getContext());
+        linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        contactList.setLayoutManager(linearLayoutManager);
         return view;
     }
 
@@ -66,26 +72,49 @@ public class OnlineFragment extends Fragment {
             discoveryProvider.setOnPeerDiscoveredListener(null);
             discoveryProvider = null;
         }
-        if (contactList != null)
+        if (contactList != null) {
             contactList.setAdapter(null);
-        if (peerAdapter != null) {
-            peerAdapter.clear();
-            peerAdapter.notifyDataSetInvalidated();
-            peerAdapter = null;
+            //contactList.addOnScrollListener(null);
         }
+//        if (peerAdapter != null) {
+//            peerAdapter.clear();
+//            peerAdapter.notifyDataSetChanged();
+//            peerAdapter = null;
+//        }
         peerListener = null;
         if (staticPeers != null) {
             staticPeers.clear();
             staticPeers = null;
         }
+        imageFetcher.setExitTasksEarly(true);
     }
 
     @Override
     public void onResume() {
         super.onResume();
         UserPool.setContext(getActivity());
-        peerAdapter = new PeerListAdapter(getActivity());
-        staticPeers =new ArrayList<>();
+        if (imageFetcher == null)
+            imageFetcher = new ImageFetcher(getActivity(), getResources().getDimensionPixelSize(R.dimen.contact_pic_size));
+        imageFetcher.setExitTasksEarly(false);
+        peerAdapter = new PeerListAdapter(getActivity(), contactList, imageFetcher);
+        contactList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (imageFetcher == null)
+                    return;
+                if (newState == RecyclerView.SCROLL_STATE_IDLE)
+                    imageFetcher.setPauseWork(false);
+                else
+                    imageFetcher.setPauseWork(true);
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+            }
+        });
+        staticPeers = new ArrayList<>();
         staticPeers.add(new StaticPeer(UserPool.getBusyUser(), "Busy", 3));
         UserPool.User[] offlineUsers = UserPool.getOfflineUsers();
         for (UserPool.User offlineUser : offlineUsers) {

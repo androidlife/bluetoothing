@@ -1,5 +1,11 @@
 package com.wordpress.laaptu.bluetooth.test;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -20,18 +26,47 @@ public class TestActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test);
         addFirstFragment();
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                addSecondFragment();
+        //bluetoothTest();
+    }
+    private BluetoothAdapter bluetoothAdapter;
+    private void bluetoothTest(){
+         bluetoothAdapter =BluetoothAdapter.getDefaultAdapter();
+         bluetoothAdapter.startDiscovery();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Timber.d("ON PAUSE");
+        try{
+            unregisterReceiver(receiver);
+        }catch(Exception e){
+
+        }
+        if (bluetoothAdapter != null)
+            bluetoothAdapter.cancelDiscovery();
+    }
+
+    private final BroadcastReceiver receiver =new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getAction().equals(BluetoothDevice.ACTION_FOUND)){
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                Timber.d("Device found =%s",device.getAddress());
             }
-        },5000);
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                getSupportFragmentManager().popBackStack();
-            }
-        },10000);
+
+        }
+    };
+
+    private IntentFilter foundAction;
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Timber.d("ON RESUME");
+        foundAction = new IntentFilter();
+        foundAction.addAction(BluetoothDevice.ACTION_FOUND);
+        registerReceiver(receiver,foundAction);
+        bluetoothTest();
     }
 
     private void addFirstFragment(){
@@ -54,13 +89,13 @@ public class TestActivity extends AppCompatActivity {
         @Override
         public void onPause() {
             super.onPause();
-            Timber.d("FirstFragment Paused");
+//            Timber.d("FirstFragment Paused");
         }
 
         @Override
         public void onResume() {
             super.onResume();
-            Timber.d("FirstFragment Resumed");
+//            Timber.d("FirstFragment Resumed");
         }
     }
 

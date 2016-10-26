@@ -194,8 +194,10 @@ public class BluetoothProvider implements PeerDiscoveryProvider {
             listener.onPeersLost(convertHashSetToCollection(prevDevices));
             listener = null;
         }
-        currentDevices.clear();
-        prevDevices.clear();
+        if (currentDevices != null) {
+            currentDevices.clear();
+            prevDevices.clear();
+        }
         currentDevices = null;
         prevDevices = null;
         totalRetry = 0;

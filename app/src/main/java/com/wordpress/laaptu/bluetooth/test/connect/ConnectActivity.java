@@ -12,6 +12,7 @@ import android.os.Bundle;
 
 import com.wordpress.laaptu.bluetooth.R;
 import com.wordpress.laaptu.bluetooth.test.base.PeerDiscoveryProvider;
+import com.wordpress.laaptu.bluetooth.test.bitmaps.loaders.ImageCache;
 import com.wordpress.laaptu.bluetooth.test.bluetooth.BluetoothProvider;
 
 import timber.log.Timber;
@@ -55,6 +56,11 @@ public class ConnectActivity extends AppCompatActivity implements PeerDiscoveryP
         peerDiscoveryProvider.start(this);
     }
 
+    @Override
+    public void finish() {
+        super.finish();
+        ImageCache.getInstance().clearCache();
+    }
 
     @Override
     public void onNetworkDeviceLost() {
