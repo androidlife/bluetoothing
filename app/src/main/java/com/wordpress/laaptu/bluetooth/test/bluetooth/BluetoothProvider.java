@@ -225,7 +225,7 @@ public class BluetoothProvider implements PeerDiscoveryProvider, BluetoothClient
         Collection<DiscoveredPeer> peerList = new ArrayList<>(hashSet.size());
         Iterator<BluetoothDevice> iterator = hashSet.iterator();
         while (iterator.hasNext()) {
-            peerList.add(new Peer(this,iterator.next()));
+            peerList.add(new Peer(this, iterator.next()));
         }
         return peerList;
     }
@@ -328,7 +328,9 @@ public class BluetoothProvider implements PeerDiscoveryProvider, BluetoothClient
 
         @Override
         public String getName() {
-            return user.name;
+            String name = bluetoothDevice.getName() == null ? "Null" : bluetoothDevice.getName();
+            return name;
+            //return user.name;
         }
 
         @Override
