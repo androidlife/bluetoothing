@@ -79,8 +79,11 @@ public class BluetoothClientServer {
 
     private void deliverTheSocket(BluetoothSocket bluetoothSocket) {
         Timber.d("Successfully connected");
-        if (clientServerListener != null)
+        if (clientServerListener != null) {
             clientServerListener.onConnectionAccept(bluetoothSocket);
+        }else{
+            Timber.d("clientServerListener is null");
+        }
     }
 
     private void pauseDiscovery(boolean pause) {
@@ -125,6 +128,7 @@ public class BluetoothClientServer {
                     //TODO create a dialog or something for us to accept the communication
                     // if denied, do nothing
                     // else pass the socket and close this
+                    Timber.d("This is server now");
                     BluetoothClientServer.this.deliverTheSocket(socket);
                     cancel();
                 }
@@ -180,6 +184,7 @@ public class BluetoothClientServer {
                 return;
             }
             //connectedToServerOurSocket(socketTobePassedToServer);
+            Timber.d("This is client now");
             BluetoothClientServer.this.deliverTheSocket(socketTobePassedToServer);
 
         }

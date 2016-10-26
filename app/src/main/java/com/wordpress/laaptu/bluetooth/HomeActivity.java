@@ -25,6 +25,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.wordpress.laaptu.bluetooth.test.ChatActivity;
 import com.wordpress.laaptu.bluetooth.test.MainActivity;
 import com.wordpress.laaptu.bluetooth.test.TestActivity;
 

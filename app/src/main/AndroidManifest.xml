@@ -45,7 +45,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".test.MainActivity"></activity>
-        <activity android:name=".test.connect.ConnectActivity"></activity>
+        <activity android:name=".test.connect.ConnectActivity"
+            android:windowSoftInputMode="stateAlwaysHidden"/>
         <activity android:name=".test.ChatActivity"></activity>
         <activity android:name=".test.TestActivity"
             android:configChanges="layoutDirection"/>

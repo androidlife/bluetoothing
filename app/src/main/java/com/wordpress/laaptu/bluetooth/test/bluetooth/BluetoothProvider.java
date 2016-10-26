@@ -9,8 +9,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
+import com.wordpress.laaptu.bluetooth.test.ChatActivity;
 import com.wordpress.laaptu.bluetooth.test.base.DiscoveredPeer;
 import com.wordpress.laaptu.bluetooth.test.base.PeerDiscoveryProvider;
+import com.wordpress.laaptu.bluetooth.test.socket.SocketProvider;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -275,8 +277,21 @@ public class BluetoothProvider implements PeerDiscoveryProvider, BluetoothClient
 
     @Override
     public void onConnectionAccept(BluetoothSocket bluetoothSocket) {
-        if (connectionListener != null)
+        if (connectionListener != null) {
             connectionListener.onAccepted();
+        }
+        //navigate to chatActivity
+        /**When this is a serrver
+         * connectionListener is null*/
+        SocketProvider.getInstance().socket = bluetoothSocket;
+        Timber.d("navigate to chat activity now");
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                activity.startActivity(new Intent(activity, ChatActivity.class));
+            }
+        });
+
 
     }
 
