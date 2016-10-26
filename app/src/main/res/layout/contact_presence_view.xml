@@ -1,7 +1,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/contactLayout"
     android:layout_width="fill_parent"
-    android:layout_height="@dimen/contact_pic_size">
+    android:layout_height="@dimen/contact_pic_size"
+    android:clickable="true">
 
     <ImageView
         android:id="@+id/contactPic"
@@ -10,14 +11,14 @@
         android:adjustViewBounds="true"
         android:contentDescription="@string/user_pic_description"
         android:padding="10dp"
-        android:scaleType="centerInside"/>
+        android:scaleType="centerInside" />
 
     <ImageView
         android:id="@+id/contactStatus"
         android:layout_width="@dimen/contact_status_size"
         android:layout_height="@dimen/contact_status_size"
-        android:layout_marginLeft="@dimen/main_activity_button_margin"
         android:layout_gravity="center_vertical"
+        android:layout_marginLeft="@dimen/main_activity_button_margin"
         android:contentDescription="@string/status_indicator_description"
         android:src="@drawable/status_online" />
 

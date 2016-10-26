@@ -22,11 +22,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 
+import timber.log.Timber;
+
 /**
  * Created by laaptu on 10/25/16.
  */
 
-public class OnlineFragment extends Fragment {
+public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemClickListener {
 
 
     private RecyclerView contactList;
@@ -78,6 +80,7 @@ public class OnlineFragment extends Fragment {
         if (peerAdapter != null) {
             peerAdapter.clear();
             peerAdapter.notifyDataSetChanged();
+            peerAdapter.setOnItemClickListener(null);
             peerAdapter = null;
         }
         peerListener = null;
@@ -125,6 +128,7 @@ public class OnlineFragment extends Fragment {
         }
 
         peerAdapter.addAll(staticPeers);
+        peerAdapter.setOnItemClickListener(this);
 
         peerListener = new PeerDiscoveryProvider.OnPeerDiscoveredListener() {
             @Override
@@ -176,6 +180,11 @@ public class OnlineFragment extends Fragment {
             discoveryProvider.reload();
         }
 
+    }
+
+    @Override
+    public void onItemClicked(DiscoveredPeer peer) {
+        Timber.d("Clicked peer name =%s and address =%s",peer.getName(),peer.getUniqueIdentifier());
     }
 
     //NOT IMPORTANT RIGHT NOW
