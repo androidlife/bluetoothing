@@ -66,22 +66,22 @@ public class BluetoothProvider implements PeerDiscoveryProvider, BluetoothClient
 
     private void onScanComplete() {
         Timber.d("Bluetooth discovery scan complete with new found devices size = %d", currentDevices.size());
-        if (!currentDevices.equals(prevDevices) && prevDevices.size() > 0) {
-            //then only pass to the interface
-            //this is for first time
-            //peer discovery lost ( prevDevices)
-            // peer discovery found( currentDevices)
-            /**
-             * This block of code is just added to check
-             * or refresh the list. Right now it is not used
-             * so later , if no referesh of list, in case ,
-             * it is not empty, then we can simply remove this*/
-            if (listener != null) {
-                //listener.onPeersLost(convertHashSetToCollection(prevDevices));
-                listener.onPeersDiscovered(convertHashSetToCollection(currentDevices));
-            }
-
-        }
+//        if (!currentDevices.equals(prevDevices) && prevDevices.size() > 0) {
+//            //then only pass to the interface
+//            //this is for first time
+//            //peer discovery lost ( prevDevices)
+//            // peer discovery found( currentDevices)
+//            /**
+//             * This block of code is just added to check
+//             * or refresh the list. Right now it is not used
+//             * so later , if no referesh of list, in case ,
+//             * it is not empty, then we can simply remove this*/
+//            if (listener != null) {
+//                //listener.onPeersLost(convertHashSetToCollection(prevDevices));
+//                listener.onPeersDiscovered(convertHashSetToCollection(currentDevices));
+//            }
+//
+//        }
         Timber.d("No new device discovery");
         for (BluetoothDevice device : currentDevices)
             Timber.d("Device id = %s", device.getAddress());
@@ -292,6 +292,7 @@ public class BluetoothProvider implements PeerDiscoveryProvider, BluetoothClient
     private void connectTo(BluetoothDevice bluetoothDevice, DiscoveredPeer.ConnectionListener connectionListener) {
         this.connectionListener = connectionListener;
         if (bluetoothClientServer != null) {
+            //pauseDiscovery(true);
             bluetoothClientServer.connectTo(bluetoothDevice);
         } else {
             connectionListener.onDeclined();

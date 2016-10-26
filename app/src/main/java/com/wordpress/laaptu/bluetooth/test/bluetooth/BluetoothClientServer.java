@@ -78,6 +78,7 @@ public class BluetoothClientServer {
     }
 
     private void deliverTheSocket(BluetoothSocket bluetoothSocket) {
+        Timber.d("Successfully connected");
         if (clientServerListener != null)
             clientServerListener.onConnectionAccept(bluetoothSocket);
     }
@@ -95,7 +96,7 @@ public class BluetoothClientServer {
         public CreateServerAndListenForClientSocketThread() {
             BluetoothServerSocket tmp = null;
             try {
-                tmp = BluetoothAdapter.getDefaultAdapter().listenUsingRfcommWithServiceRecord(SERVER_NAME, SERVER_UUID);
+                tmp = BluetoothAdapter.getDefaultAdapter().listenUsingInsecureRfcommWithServiceRecord(SERVER_NAME, SERVER_UUID);
             } catch (Exception e) {
                 Timber.d("Unable to create a server ");
                 e.printStackTrace();
@@ -152,7 +153,7 @@ public class BluetoothClientServer {
             BluetoothSocket tmp = null;
             serverBluetoothDevice = device;
             try {
-                tmp = device.createRfcommSocketToServiceRecord(SERVER_UUID);
+                tmp = device.createInsecureRfcommSocketToServiceRecord(SERVER_UUID);
             } catch (Exception e) {
                 Timber.e(
                         "Cannot create socket that needs to be passed to the server, going for fallback socket");
