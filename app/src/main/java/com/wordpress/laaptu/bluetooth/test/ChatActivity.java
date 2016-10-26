@@ -13,6 +13,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.wordpress.laaptu.bluetooth.R;
+import com.wordpress.laaptu.bluetooth.test.bluetooth.BluetoothConnectionMonitor;
+import com.wordpress.laaptu.bluetooth.test.bluetooth.ConnectionMonitor;
 import com.wordpress.laaptu.bluetooth.test.socket.DataConduit;
 
 import java.lang.ref.WeakReference;
@@ -20,8 +22,9 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static android.R.id.message;
+import static com.wordpress.laaptu.bluetooth.test.bluetooth.ConnectionMonitor.*;
 
-public class ChatActivity extends AppCompatActivity {
+public class ChatActivity extends AppCompatActivity implements OnConnectionLostListener {
 
 
     private EditText txtSend;
@@ -29,6 +32,7 @@ public class ChatActivity extends AppCompatActivity {
     private TextView txtChat;
 
     private DataConduit conduit;
+    private ConnectionMonitor connectionMonitor;
 
     String[] messages = {
             "Hi", "Hello how are you", "I am doing fine out here", "Great", "Good to know you",
@@ -54,6 +58,7 @@ public class ChatActivity extends AppCompatActivity {
         outgoingMessages = new LinkedBlockingQueue<String>();
         conduit = new DataConduit.TCPBluetooth();
         new StartComm().execute(conduit, new WeakReference<ChatActivity>(this));
+        connectionMonitor = new BluetoothConnectionMonitor();
         sendRandomText();
     }
 
@@ -89,6 +94,11 @@ public class ChatActivity extends AppCompatActivity {
 
     private void appendText(String text) {
         txtChat.append(text.concat("\n"));
+    }
+
+    @Override
+    public void onConnectionLost() {
+        this.finish();
     }
 
     public static class StartComm extends AsyncTask<Object, Void, Void> {
@@ -204,6 +214,12 @@ public class ChatActivity extends AppCompatActivity {
         dispatchThread.start();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (connectionMonitor != null)
+            connectionMonitor.start(this, this);
+    }
 
     @Override
     protected void onStop() {
@@ -231,6 +247,10 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         handler.removeCallbacks(repeatedRunnable);
+        if (connectionMonitor != null) {
+            connectionMonitor.stop();
+            connectionMonitor = null;
+        }
         super.onStop();
     }
 
