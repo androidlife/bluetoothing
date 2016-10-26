@@ -104,6 +104,8 @@ public class ImageCache {
                 Log.d(TAG, "Memory cache cleared");
             }
         }
+        if(mReusableBitmaps !=null)
+             mReusableBitmaps.clear();
     }
 
 

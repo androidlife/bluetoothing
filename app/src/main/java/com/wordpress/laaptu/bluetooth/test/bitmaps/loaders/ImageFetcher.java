@@ -240,13 +240,14 @@ public class ImageFetcher extends ImageWorker {
 
         if (height > reqHeight || width > reqWidth) {
 
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
+//            final int halfHeight = height / 2;
+//            final int halfWidth = width / 2;
+
 
             // Calculate the largest inSampleSize value that is a power of 2 and keeps both
             // height and width larger than the requested height and width.
-            while ((halfHeight / inSampleSize) > reqHeight
-                    && (halfWidth / inSampleSize) > reqWidth) {
+            while ((height / inSampleSize) > reqHeight
+                    && (width / inSampleSize) > reqWidth) {
                 inSampleSize *= 2;
             }
 
