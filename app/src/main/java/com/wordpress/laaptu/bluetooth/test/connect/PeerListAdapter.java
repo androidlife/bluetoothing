@@ -23,10 +23,9 @@ public class PeerListAdapter extends RecyclerView.Adapter<PeerListAdapter.ViewHo
     private ImageFetcher imageFetcher;
     private RecyclerView recyclerView;
 
-    public PeerListAdapter(Activity activity,RecyclerView recyclerView,ImageFetcher imageFetcher) {
+    public PeerListAdapter(Activity activity, RecyclerView recyclerView, ImageFetcher imageFetcher) {
         layoutInflater = LayoutInflater.from(activity);
         peerList = new ArrayList<>();
-
         this.imageFetcher = imageFetcher;
         this.recyclerView = recyclerView;
     }
@@ -64,11 +63,6 @@ public class PeerListAdapter extends RecyclerView.Adapter<PeerListAdapter.ViewHo
     }
 
 
-    public int getCount() {
-        return peerList.size();
-    }
-
-
     public DiscoveredPeer getItem(int position) {
         return peerList.get(position);
     }
@@ -95,10 +89,7 @@ public class PeerListAdapter extends RecyclerView.Adapter<PeerListAdapter.ViewHo
     public void onBindViewHolder(ViewHolder holder, int position) {
         DiscoveredPeer peer = getItem(position);
         if (peer != null) {
-            //contact.setImageResource(peer.getPicture());
-            int size = holder.contact.getResources().getDimensionPixelSize(R.dimen.contact_pic_size);
-            //loadBitmap(peer.getPicture(), holder.contact, size, size);
-            imageFetcher.loadImage(peer.getPicture(),holder.contact);
+            imageFetcher.loadImage(peer.getPicture(), holder.contact);
             holder.name.setText(peer.getName());
             String statusText = peer.getStatus();
             if (statusText.startsWith("Off")) {
@@ -121,13 +112,6 @@ public class PeerListAdapter extends RecyclerView.Adapter<PeerListAdapter.ViewHo
     }
 
 
-//    @Override
-//    public boolean isEnabled(int position) {
-//        DiscoveredPeer peer = (DiscoveredPeer) getItem(position);
-//        String status = peer.getStatus();
-//        return status.equals("Online");
-//    }
-
     static class ViewHolder extends RecyclerView.ViewHolder {
         public ImageView contact, status;
         public TextView name;
@@ -140,69 +124,5 @@ public class PeerListAdapter extends RecyclerView.Adapter<PeerListAdapter.ViewHo
         }
     }
 
-//    //For ImageLoad Testing
-//    // Move all these to ImageLoaders
-//    public static LruCache<Integer, Bitmap> lruCache;
-//
-//    private void createMemoryCache() {
-//        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
-//        final int cacheSize = maxMemory / 8;
-//        if (lruCache == null) {
-//            lruCache = new LruCache<Integer, Bitmap>(cacheSize) {
-//                @Override
-//                protected int sizeOf(Integer key, Bitmap bitmap) {
-//                    return bitmap.getByteCount() / 1024;
-//                }
-//            };
-//        }
-//    }
-//
-//    public static void addBitmapToMemoryCache(Integer resId, Bitmap bitmap) {
-//        if (getBitmapFromMemoryCache(resId) == null)
-//            lruCache.put(resId, bitmap);
-//    }
-//
-//    public static Bitmap getBitmapFromMemoryCache(Integer key) {
-//        return lruCache.get(key);
-//    }
-//
-//    public void loadBitmap(int resId, ImageView imageView, int desiredWidth, int desiredHeight) {
-//        if(getBitmapFromMemoryCache(resId) !=null){
-//            imageView.setImageBitmap(getBitmapFromMemoryCache(resId));
-//            return;
-//        }
-//
-//        if (cancelPotentialWork(resId, imageView)) {
-//            final BitmapWorkerTask task = new BitmapWorkerTask(imageView);
-//            final AsyncDrawable asyncDrawable = new AsyncDrawable(imageView.getResources(), null, task);
-//            imageView.setImageDrawable(asyncDrawable);
-//            task.execute(resId, desiredWidth, desiredHeight);
-//        }
-//    }
-//
-//    public static boolean cancelPotentialWork(int resId, ImageView imageView) {
-//        BitmapWorkerTask bitmapWorkerTask = getBitmapWorkedTask(imageView);
-//        if (bitmapWorkerTask != null) {
-//            final int bitmapData = bitmapWorkerTask.drawableId;
-//            if (bitmapData == 0 || bitmapData != resId) {
-//                bitmapWorkerTask.cancel(true);
-//            } else {
-//                return false;
-//            }
-//        }
-//        return true;
-//
-//    }
-//
-//    public static BitmapWorkerTask getBitmapWorkedTask(ImageView imageView) {
-//        if (imageView != null) {
-//            final Drawable drawable = imageView.getDrawable();
-//            if (drawable instanceof AsyncDrawable) {
-//                final AsyncDrawable asyncDrawable = (AsyncDrawable) drawable;
-//                return asyncDrawable.getBitmapWorkerTask();
-//            }
-//        }
-//        return null;
-//    }
 
 }

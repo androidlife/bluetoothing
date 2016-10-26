@@ -74,28 +74,29 @@ public class OnlineFragment extends Fragment {
         }
         if (contactList != null) {
             contactList.setAdapter(null);
-            //contactList.addOnScrollListener(null);
         }
-//        if (peerAdapter != null) {
-//            peerAdapter.clear();
-//            peerAdapter.notifyDataSetChanged();
-//            peerAdapter = null;
-//        }
+        if (peerAdapter != null) {
+            peerAdapter.clear();
+            peerAdapter.notifyDataSetChanged();
+            peerAdapter = null;
+        }
         peerListener = null;
         if (staticPeers != null) {
             staticPeers.clear();
             staticPeers = null;
         }
-        imageFetcher.setExitTasksEarly(true);
+
+        if (imageFetcher != null) {
+            imageFetcher.setExitTasksEarly(true);
+            imageFetcher = null;
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        UserPool.setContext(getActivity());
-        if (imageFetcher == null)
-            imageFetcher = new ImageFetcher(getActivity(), getResources().getDimensionPixelSize(R.dimen.contact_pic_size));
-        imageFetcher.setExitTasksEarly(false);
+
+        imageFetcher = new ImageFetcher(getActivity(), getResources().getDimensionPixelSize(R.dimen.contact_pic_size));
         peerAdapter = new PeerListAdapter(getActivity(), contactList, imageFetcher);
         contactList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -114,6 +115,8 @@ public class OnlineFragment extends Fragment {
                 super.onScrolled(recyclerView, dx, dy);
             }
         });
+
+        UserPool.setContext(getActivity());
         staticPeers = new ArrayList<>();
         staticPeers.add(new StaticPeer(UserPool.getBusyUser(), "Busy", 3));
         UserPool.User[] offlineUsers = UserPool.getOfflineUsers();
@@ -126,19 +129,19 @@ public class OnlineFragment extends Fragment {
         peerListener = new PeerDiscoveryProvider.OnPeerDiscoveredListener() {
             @Override
             public void onPeersDiscovered(final Collection<DiscoveredPeer> discoveredPeers) {
-                Activity activity = getActivity();
-                if (activity != null) {
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            peerAdapter.clear();
-                            peerAdapter.addAll(discoveredPeers);
-                            peerAdapter.addAll(staticPeers);
-                            peerAdapter.sort(peerComparator);
-                            peerAdapter.notifyDataSetChanged();
-                        }
-                    });
-                }
+//                Activity activity = getActivity();
+//                if (activity != null) {
+//                    activity.runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            peerAdapter.clear();
+//                            peerAdapter.addAll(discoveredPeers);
+//                            peerAdapter.addAll(staticPeers);
+//                            peerAdapter.sort(peerComparator);
+//                            peerAdapter.notifyDataSetChanged();
+//                        }
+//                    });
+//                }
             }
 
             @Override
