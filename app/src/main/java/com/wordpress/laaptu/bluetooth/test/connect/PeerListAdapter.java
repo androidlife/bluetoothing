@@ -113,8 +113,8 @@ public class PeerListAdapter extends RecyclerView.Adapter<PeerListAdapter.ViewHo
 
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        public ImageView contact, status;
-        public TextView name;
+        ImageView contact, status;
+        TextView name;
 
         public ViewHolder(View itemView) {
             super(itemView);

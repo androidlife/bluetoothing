@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
-import android.support.compat.BuildConfig;
 import android.support.v4.util.LruCache;
 import android.util.Log;
 
@@ -85,9 +84,7 @@ public class ImageCache {
             memValue = mMemoryCache.get(data);
         }
 
-        if (BuildConfig.DEBUG && memValue != null) {
-            Log.d(TAG, "Memory cache hit");
-        }
+        Log.d(TAG, "Memory cache hit");
 
         return memValue;
         //END_INCLUDE(get_bitmap_from_mem_cache)
@@ -100,12 +97,10 @@ public class ImageCache {
     public void clearCache() {
         if (mMemoryCache != null) {
             mMemoryCache.evictAll();
-            if (BuildConfig.DEBUG) {
-                Log.d(TAG, "Memory cache cleared");
-            }
+            Log.d(TAG, "Memory cache cleared");
         }
-        if(mReusableBitmaps !=null)
-             mReusableBitmaps.clear();
+        if (mReusableBitmaps != null)
+            mReusableBitmaps.clear();
     }
 
 

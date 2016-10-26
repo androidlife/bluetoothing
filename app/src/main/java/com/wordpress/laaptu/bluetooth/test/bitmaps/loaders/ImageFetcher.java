@@ -22,9 +22,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
-import android.support.compat.BuildConfig;
 import android.util.Log;
-
 
 import java.io.FileDescriptor;
 
@@ -91,9 +89,7 @@ public class ImageFetcher extends ImageWorker {
      * @return
      */
     private Bitmap processBitmap(int resId) {
-        if (BuildConfig.DEBUG) {
-            Log.d(TAG, "processBitmap - " + resId);
-        }
+        Log.d(TAG, "processBitmap - " + resId);
         return decodeSampledBitmapFromResource(mResources, resId, mImageWidth,
                 mImageHeight, getImageCache());
     }
