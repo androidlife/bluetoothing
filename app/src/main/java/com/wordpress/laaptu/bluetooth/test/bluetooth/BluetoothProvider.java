@@ -1,13 +1,20 @@
 package com.wordpress.laaptu.bluetooth.test.bluetooth;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 
 import com.wordpress.laaptu.bluetooth.test.ChatActivity;
 import com.wordpress.laaptu.bluetooth.test.base.DiscoveredPeer;
@@ -21,6 +28,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 import timber.log.Timber;
+
+import static com.wordpress.laaptu.bluetooth.test.bluetooth.BluetoothProvider.peerName;
+import static com.wordpress.laaptu.bluetooth.test.bluetooth.BluetoothProvider.requestListener;
 
 /**
  */
@@ -328,6 +338,49 @@ public class BluetoothProvider implements PeerDiscoveryProvider, BluetoothClient
 
     }
 
+
+    public static String peerName;
+    public static OnRequestListener requestListener;
+
+    @Override
+    public void showDialog(final String peerName, final OnRequestListener requestListener) {
+        BluetoothProvider.peerName = peerName;
+        BluetoothProvider.requestListener = requestListener;
+        final FragmentActivity activity = ((FragmentActivity) this.activity);
+        activity.runOnUiThread(new Runnable() {
+                                   @Override
+                                   public void run() {
+                                       new ConfirmDialog().show(activity.getSupportFragmentManager(), "ConfirmConnection");
+                                   }
+                               }
+        );
+    }
+
+    //Change it later on
+    public static class ConfirmDialog extends DialogFragment {
+        @NonNull
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), android.R.style.Theme_Holo_Light_Panel);
+            builder.setTitle("Confirm Connection").setMessage("Okay to connect " + peerName + "?");
+            builder.setNegativeButton("Reject", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    requestListener.onRequestAccepted(false);
+                    dialog.dismiss();
+                }
+            }).setPositiveButton("Accept", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    ;
+                    requestListener.onRequestAccepted(true);
+                    dialog.dismiss();
+                }
+            });
+            return builder.create();
+        }
+    }
+
     private DiscoveredPeer.ConnectionListener connectionListener;
 
     private void connectTo(BluetoothDevice bluetoothDevice, DiscoveredPeer.ConnectionListener connectionListener) {
@@ -340,10 +393,10 @@ public class BluetoothProvider implements PeerDiscoveryProvider, BluetoothClient
         }
     }
 
-    /**
-     * OnClientServerListener methods
-     * ....Ends
-     */
+/**
+ * OnClientServerListener methods
+ * ....Ends
+ */
 
 
     /**

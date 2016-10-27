@@ -6,7 +6,14 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 
+import com.wordpress.laaptu.bluetooth.test.socket.SocketProvider;
+
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketAddress;
 import java.util.UUID;
 
 import timber.log.Timber;
@@ -28,6 +35,7 @@ public class BluetoothClientServer {
     private CreateServerAndListenForClientSocketThread serverThread;
     private ConnectToServerThread connectToServerThread;
     private OnClientServerListener clientServerListener;
+    private SendMessageThread sendMessageThread;
 
     public void start(OnClientServerListener clientServerListener) {
         this.clientServerListener = clientServerListener;
@@ -69,6 +77,20 @@ public class BluetoothClientServer {
             serverThread = null;
         }
         stopConnectToServerThread();
+        stopSendMessageThread();
+    }
+
+    private void stopSendMessageThread() {
+        try {
+            if (sendMessageThread != null) {
+                sendMessageThread.cancel();
+                sendMessageThread.join(250);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            sendMessageThread = null;
+        }
     }
 
     private void sendError(int errorCode) {
@@ -76,14 +98,26 @@ public class BluetoothClientServer {
             clientServerListener.onError(errorCode);
     }
 
+    private boolean isServer;
+
     private void deliverTheSocket(BluetoothSocket bluetoothSocket, boolean isServer) {
-        Timber.d("Successfully connected");
-        bluetoothSocket.
-        if (clientServerListener != null) {
-            clientServerListener.onConnectionAccept(bluetoothSocket);
-        } else {
-            Timber.d("clientServerListener is null");
+        this.isServer = isServer;
+        SocketProvider.getInstance().socket = bluetoothSocket;
+        stopSendMessageThread();
+        sendMessageThread = new SendMessageThread(SocketProvider.getInstance().socket, isServer);
+        sendMessageThread.start();
+        // need to create a dialog
+        // need to save the peer name as well
+        if (isServer) {
+            clientServerListener.showDialog("Some Peer ", new OnClientServerListener.OnRequestListener() {
+                @Override
+                public void onRequestAccepted(boolean accept) {
+                    sendMessageThread.write(accept ? REQUEST_ACCEPT.getBytes() : REQUEST_REJECT.getBytes());
+                    onConnectionSuccess(accept);
+                }
+            });
         }
+
     }
 
     private void rejectConnection() {
@@ -96,6 +130,34 @@ public class BluetoothClientServer {
             clientServerListener.pauseDiscovery(pause);
     }
 
+    //for client only
+    private void onMessageReceived(String message, boolean isServer) {
+        //this is for client only
+        stopSendMessageThread();
+        if (!isServer) {
+            onConnectionSuccess(message.equals(REQUEST_ACCEPT));
+        }
+    }
+
+    //common to both server and client
+    private void onConnectionSuccess(boolean success) {
+        if (success) {
+            stopConnectToServerThread();
+            if (clientServerListener != null)
+                clientServerListener.onConnectionAccept(SocketProvider.getInstance().socket);
+        } else {
+            try {
+                SocketProvider.getInstance().socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            rejectConnection();
+        }
+    }
+
+    /**
+     * Thread portion
+     */
 
     private class CreateServerAndListenForClientSocketThread extends Thread {
         private final BluetoothServerSocket serverSocket;
@@ -210,9 +272,62 @@ public class BluetoothClientServer {
         }
     }
 
-    private class SendMessageThread extends Thread{
+    private class SendMessageThread extends Thread {
+        private boolean isServer;
+        private InputStream inputStream;
+        private OutputStream outputStream;
+        private boolean read = true;
+
+
+        public SendMessageThread(BluetoothSocket socket, boolean isServer) {
+            InputStream inputStreamTmp = null;
+            OutputStream outputStreamTmp = null;
+            try {
+                inputStreamTmp = socket.getInputStream();
+                Timber.d("Input Stream accessed of socket");
+                outputStreamTmp = socket.getOutputStream();
+                Timber.d("Output stream accessed of socket");
+            } catch (IOException e) {
+                e.printStackTrace();
+                Timber.e("Unable to access input or output stream from socket");
+            }
+            inputStream = inputStreamTmp;
+            outputStream = outputStreamTmp;
+            this.isServer = isServer;
+        }
+
+        @Override
+        public void run() {
+            super.run();
+            byte[] buffer = new byte[1024];
+            int bytes;
+            while (read) {
+                try {
+                    bytes = inputStream.read(buffer);
+                    String value = new String(buffer, 0, bytes);
+                    BluetoothClientServer.this.onMessageReceived(value, isServer);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        public void write(byte[] bytes) {
+            try {
+                outputStream.write(bytes);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        public void cancel() {
+            read = false;
+            inputStream = null;
+            outputStream = null;
+        }
 
     }
+
 
     public interface OnClientServerListener {
         void onError(int errorCode);
@@ -222,5 +337,11 @@ public class BluetoothClientServer {
         void onConnectionAccept(BluetoothSocket bluetoothSocket);
 
         void onConnectionReject();
+
+        void showDialog(String peerName, OnRequestListener requestListener);
+
+        interface OnRequestListener {
+            void onRequestAccepted(boolean accept);
+        }
     }
 }

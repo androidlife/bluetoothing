@@ -19,6 +19,10 @@ import com.wordpress.laaptu.bluetooth.R;
 import com.wordpress.laaptu.bluetooth.test.bluetooth.StoredBT;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.UnknownHostException;
 
 import timber.log.Timber;
 
@@ -43,18 +47,20 @@ public class TestActivity extends AppCompatActivity {
     private static final String BT_NOTE3 = "38:94:96:F2:37:60";
 
     private void createBluetooth() {
-//        Timber.d("Stored bluetooth is null or not =%b and address = %s", StoredBT.getInstance().bluetoothDevice == null,
-//                StoredBT.getInstance().bluetoothDevice == null ? "NULL" : StoredBT.getInstance().bluetoothDevice.getAddress());
-//        try {
-//            BluetoothDevice device = BluetoothDevice.class.getConstructor(String.class).newInstance(BT_NOTE3);
-//            if (device == null) {
-//                Timber.d("Device is null");
-//            } else {
-//                Timber.d("Device address =%s", device.getAddress());
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        final BluetoothDevice device = StoredBT.getInstance().getBluetoothDevice();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Socket socket = new Socket(device.getAddress(), 1);
+                    String address = new String(socket.getInetAddress().getAddress());
+                    System.out.println(address);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
     }
 
     @Override
@@ -90,7 +96,7 @@ public class TestActivity extends AppCompatActivity {
         foundAction = new IntentFilter();
         foundAction.addAction(BluetoothDevice.ACTION_FOUND);
         registerReceiver(receiver, foundAction);
-        bluetoothTest();
+        //bluetoothTest();
     }
 
     private void addFirstFragment() {
