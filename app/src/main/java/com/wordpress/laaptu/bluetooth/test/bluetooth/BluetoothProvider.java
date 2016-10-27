@@ -118,6 +118,8 @@ public class BluetoothProvider implements PeerDiscoveryProvider, BluetoothClient
             Logger.d("Bluetooth discovery is in progress, can't refresh");
             return;
         }
+        totalRetry = TOTAL_RETRY;
+        setScanFinished(false);
         cancelBluetoothDiscovery();
         bluetoothAdapter.startDiscovery();
     }
@@ -169,7 +171,7 @@ public class BluetoothProvider implements PeerDiscoveryProvider, BluetoothClient
      */
     @Override
     public void start() {
-        setScanFinished(false);
+
         bluetoothClientServer = new BluetoothClientServer();
         bluetoothClientServer.start(this);
 
@@ -185,7 +187,7 @@ public class BluetoothProvider implements PeerDiscoveryProvider, BluetoothClient
         activity.registerReceiver(bluetoothStateBR, bluetoothStateIntentFilter);
 
         //starting server should be done here
-        totalRetry = TOTAL_RETRY;
+        //totalRetry = TOTAL_RETRY;
         refreshDiscovery();
 
         //firstScan = true;
