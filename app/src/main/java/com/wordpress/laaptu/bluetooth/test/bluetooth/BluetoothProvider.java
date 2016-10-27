@@ -66,9 +66,6 @@ public class BluetoothProvider implements PeerDiscoveryProvider, BluetoothClient
         }
     };
 
-    private void logDevices() {
-
-    }
 
     private void onScanComplete() {
         Timber.d("Bluetooth discovery scan complete with new found devices size = %d", currentDevices.size());
@@ -188,11 +185,12 @@ public class BluetoothProvider implements PeerDiscoveryProvider, BluetoothClient
 
         //starting server should be done here
         //totalRetry = TOTAL_RETRY;
-        refreshDiscovery();
 
         //firstScan = true;
         currentDevices = new HashSet<>();
         prevDevices = new HashSet<>();
+        //this must be last always
+        refreshDiscovery();
     }
 
     @Override
@@ -248,7 +246,7 @@ public class BluetoothProvider implements PeerDiscoveryProvider, BluetoothClient
     @Override
     public void reload() {
         //this should be the refresh logic
-        refreshDiscovery();
+        //refreshDiscovery();
     }
 
     @Override
