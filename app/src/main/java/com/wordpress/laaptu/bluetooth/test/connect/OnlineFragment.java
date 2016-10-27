@@ -5,11 +5,13 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.ButtonBarLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ListView;
 
 import com.wordpress.laaptu.bluetooth.R;
@@ -133,19 +135,17 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
         peerListener = new PeerDiscoveryProvider.OnPeerDiscoveredListener() {
             @Override
             public void onPeersDiscovered(final Collection<DiscoveredPeer> discoveredPeers) {
-//                Activity activity = getActivity();
-//                if (activity != null) {
-//                    activity.runOnUiThread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            peerAdapter.clear();
-//                            peerAdapter.addAll(discoveredPeers);
-//                            peerAdapter.addAll(staticPeers);
-//                            peerAdapter.sort(peerComparator);
-//                            peerAdapter.notifyDataSetChanged();
-//                        }
-//                    });
-//                }
+                Activity activity = getActivity();
+                if (activity != null) {
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            for (DiscoveredPeer peer : discoveredPeers)
+                                peerAdapter.addAt(0, peer);
+                            peerAdapter.notifyDataSetChanged();
+                        }
+                    });
+                }
             }
 
             @Override
@@ -157,19 +157,18 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
 
             @Override
             public void onPeersLost(final Collection<DiscoveredPeer> lostPeers) {
-//                Activity activity = getActivity();
-//                if (activity != null) {
-//                    activity.runOnUiThread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            for (DiscoveredPeer peer : lostPeers) {
-//                                peerAdapter.remove(peer);
-//                            }
+                Activity activity = getActivity();
+                if (activity != null) {
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            for (DiscoveredPeer peer : lostPeers) {
+                                peerAdapter.remove(peer);
+                            }
 //                            peerAdapter.notifyDataSetChanged();
-//                        }
-//                    });
-//                }
-
+                        }
+                    });
+                }
             }
         };
 
@@ -177,8 +176,9 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
         //reload of discovery provider only
         if (discoveryProvider != null) {
             discoveryProvider.setOnPeerDiscoveredListener(peerListener);
-            discoveryProvider.reload();
+            //discoveryProvider.reload();
         }
+        referesh();
 
     }
 
@@ -244,5 +244,18 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
         public String getUniqueIdentifier() {
             return null;
         }
+    }
+
+    //Remove it later
+    public void referesh() {
+        Button button = (Button) getView().findViewById(R.id.btn_refresh);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (discoveryProvider != null)
+                    discoveryProvider.reload();
+            }
+        });
+
     }
 }

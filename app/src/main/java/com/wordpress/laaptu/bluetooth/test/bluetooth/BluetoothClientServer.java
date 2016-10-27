@@ -119,7 +119,7 @@ public class BluetoothClientServer {
                     Timber.d("Server is running successfully");
                     socket = serverSocket.accept();
                     Timber.d("Socket created successfully i.e. someone is requesting for connection");
-                } catch (IOException e) {
+                } catch (Exception e) {
                     Timber.e("Socket creation problem");
                     e.printStackTrace();
                 }

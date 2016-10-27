@@ -19,6 +19,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 
+import timber.log.Timber;
+
 public class PeerListAdapter extends RecyclerView.Adapter<PeerListAdapter.ViewHolder> {
     private LayoutInflater layoutInflater;
     private ArrayList<DiscoveredPeer> peerList;
@@ -50,7 +52,12 @@ public class PeerListAdapter extends RecyclerView.Adapter<PeerListAdapter.ViewHo
 
 
     public void remove(DiscoveredPeer object) {
-        peerList.remove(object);
+        boolean removed = peerList.remove(object);
+        Timber.d("Peer removed = %s and success =%b",object.getUniqueIdentifier(),removed);
+    }
+
+    public synchronized void addAt(int index, DiscoveredPeer peer) {
+        peerList.add(index, peer);
     }
 
 

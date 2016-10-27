@@ -12,6 +12,7 @@ import android.content.IntentFilter;
 import com.wordpress.laaptu.bluetooth.test.ChatActivity;
 import com.wordpress.laaptu.bluetooth.test.base.DiscoveredPeer;
 import com.wordpress.laaptu.bluetooth.test.base.PeerDiscoveryProvider;
+import com.wordpress.laaptu.bluetooth.test.log.Logger;
 import com.wordpress.laaptu.bluetooth.test.socket.SocketProvider;
 
 import java.util.ArrayList;
@@ -65,25 +66,25 @@ public class BluetoothProvider implements PeerDiscoveryProvider, BluetoothClient
         }
     };
 
+    private void logDevices() {
+
+    }
 
     private void onScanComplete() {
         Timber.d("Bluetooth discovery scan complete with new found devices size = %d", currentDevices.size());
-//        if (!currentDevices.equals(prevDevices) && prevDevices.size() > 0) {
-//            //then only pass to the interface
-//            //this is for first time
-//            //peer discovery lost ( prevDevices)
-//            // peer discovery found( currentDevices)
-//            /**
-//             * This block of code is just added to check
-//             * or refresh the list. Right now it is not used
-//             * so later , if no referesh of list, in case ,
-//             * it is not empty, then we can simply remove this*/
-//            if (listener != null) {
-//                //listener.onPeersLost(convertHashSetToCollection(prevDevices));
-//                listener.onPeersDiscovered(convertHashSetToCollection(currentDevices));
-//            }
-//
-//        }
+        if (!currentDevices.equals(prevDevices) && prevDevices.size() > 0 && listener != null) {
+            //this is for referesh of list
+
+            //the best solution would be
+            // difference of two set and remove the items
+            // then add new items
+            Timber.d("Old HashSet");
+            listener.onPeersLost(convertHashSetToCollection(prevDevices));
+            Timber.d("New HashSet");
+            listener.onPeersDiscovered(convertHashSetToCollection(currentDevices));
+
+
+        }
         Timber.d("No new device discovery");
         for (BluetoothDevice device : currentDevices)
             Timber.d("Device id = %s", device.getAddress());
@@ -91,7 +92,7 @@ public class BluetoothProvider implements PeerDiscoveryProvider, BluetoothClient
         prevDevices = new HashSet<>(currentDevices);
         currentDevices.clear();
         if (prevDevices.size() == 0)
-            startDiscovery();
+            retryDiscovery();
         else {
             setScanFinished(true);
             cancelBluetoothDiscovery();
@@ -112,8 +113,16 @@ public class BluetoothProvider implements PeerDiscoveryProvider, BluetoothClient
         currentDevices.add(device);
     }
 
+    private void refreshDiscovery() {
+        if (bluetoothAdapter.isDiscovering()) {
+            Logger.d("Bluetooth discovery is in progress, can't refresh");
+            return;
+        }
+        cancelBluetoothDiscovery();
+        bluetoothAdapter.startDiscovery();
+    }
 
-    private void startDiscovery() {
+    private void retryDiscovery() {
         cancelBluetoothDiscovery();
         if (totalRetry > 0) {
             --totalRetry;
@@ -177,7 +186,7 @@ public class BluetoothProvider implements PeerDiscoveryProvider, BluetoothClient
 
         //starting server should be done here
         totalRetry = TOTAL_RETRY;
-        startDiscovery();
+        refreshDiscovery();
 
         //firstScan = true;
         currentDevices = new HashSet<>();
@@ -227,14 +236,17 @@ public class BluetoothProvider implements PeerDiscoveryProvider, BluetoothClient
         Collection<DiscoveredPeer> peerList = new ArrayList<>(hashSet.size());
         Iterator<BluetoothDevice> iterator = hashSet.iterator();
         while (iterator.hasNext()) {
-            peerList.add(new Peer(this, iterator.next()));
+            BluetoothDevice device = iterator.next();
+            Timber.d("Bluetooth device = %s", device.getAddress());
+            peerList.add(new Peer(this, device));
         }
         return peerList;
     }
 
     @Override
     public void reload() {
-
+        //this should be the refresh logic
+        refreshDiscovery();
     }
 
     @Override
@@ -269,7 +281,7 @@ public class BluetoothProvider implements PeerDiscoveryProvider, BluetoothClient
             if (pause)
                 cancelBluetoothDiscovery();
             else
-                startDiscovery();
+                retryDiscovery();
         }
 
     }
@@ -379,6 +391,19 @@ public class BluetoothProvider implements PeerDiscoveryProvider, BluetoothClient
             UserPool.releaseUser(user, bluetoothDevice.getAddress());
             bluetoothDevice = null;
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            return (obj instanceof Peer
+                    && ((Peer) obj).getUniqueIdentifier().equals(this.getUniqueIdentifier()));
+
+        }
+
+        @Override
+        public int hashCode() {
+            return Integer.valueOf(getUniqueIdentifier());
+        }
+
         /**
          * DiscoveredPeer methods
          * ....Ends
