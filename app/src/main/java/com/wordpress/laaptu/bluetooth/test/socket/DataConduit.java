@@ -363,7 +363,7 @@ public interface DataConduit {
                         Log.e(TAG, "Error reading incoming packet size");
                         return false;
                     }
-                    incoming.limit(inSize.getInt());
+                    //incoming.limit(inSize.getInt());
                     if (!actualRead(incoming)) {
                         Log.e(TAG, "Error reading incoming packet of " + incoming.limit() + " bytes");
                     }
