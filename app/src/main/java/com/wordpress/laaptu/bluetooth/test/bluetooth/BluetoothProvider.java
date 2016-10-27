@@ -103,6 +103,7 @@ public class BluetoothProvider implements PeerDiscoveryProvider, BluetoothClient
             //pass the single device to the listener
             // but need to check whether that device is unique or not
             // if unique then only add
+
             Timber.d("First scan and device found =%s", device.getAddress());
             if (listener != null && !currentDevices.contains(device))
                 listener.onSinglePeerDiscovered(new Peer(this, device));
@@ -190,7 +191,18 @@ public class BluetoothProvider implements PeerDiscoveryProvider, BluetoothClient
         currentDevices = new HashSet<>();
         prevDevices = new HashSet<>();
         //this must be last always
-        refreshDiscovery();
+        //refreshDiscovery();
+        //workWithSavedItems();
+    }
+
+    private void workWithSavedItems() {
+        BluetoothDevice bluetoothDevice = StoredBT.getInstance().getBluetoothDevice();
+        if (listener != null) {
+            Collection<DiscoveredPeer> devices = new ArrayList<>();
+            DiscoveredPeer peer = new BluetoothProvider.Peer(this, bluetoothDevice);
+            devices.add(peer);
+            listener.onPeersDiscovered(devices);
+        }
     }
 
     @Override
@@ -257,6 +269,8 @@ public class BluetoothProvider implements PeerDiscoveryProvider, BluetoothClient
     @Override
     public void setOnPeerDiscoveredListener(OnPeerDiscoveredListener listener) {
         this.listener = listener;
+        //Remove it later
+        workWithSavedItems();
     }
 
     @Override

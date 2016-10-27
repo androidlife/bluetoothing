@@ -1,18 +1,23 @@
 package com.wordpress.laaptu.bluetooth.test.connect;
 
 import android.app.Activity;
-import android.net.wifi.p2p.WifiP2pManager;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.ButtonBarLayout;
+import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ListView;
 
 import com.wordpress.laaptu.bluetooth.R;
 import com.wordpress.laaptu.bluetooth.test.base.DiscoveredPeer;
@@ -25,6 +30,7 @@ import java.util.Collection;
 import java.util.Comparator;
 
 import timber.log.Timber;
+
 
 /**
  * Created by laaptu on 10/25/16.
@@ -182,22 +188,135 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
 
     }
 
+    /**
+     * On Connection functions
+     */
     @Override
-    public void onItemClicked(DiscoveredPeer peer) {
+    public void onItemClicked(final DiscoveredPeer peer) {
         Timber.d("Clicked peer name =%s and address =%s", peer.getName(), peer.getUniqueIdentifier());
         //TODO to add
-        peer.connectTo(new DiscoveredPeer.ConnectionListener() {
+        DialogMethod dialogMethod = new DialogMethod() {
             @Override
-            public void onAccepted() {
+            public void invokeMethod() {
+                AsyncTask<Object, Void, Void> connectTask = new AsyncTask<Object, Void, Void>() {
+
+                    @Override
+                    protected Void doInBackground(Object... params) {
+                        final DiscoveredPeer peer = (DiscoveredPeer) params[0];
+                        final Fragment progress = (Fragment) params[1];
+                        final Runnable dismiss = new Runnable() {
+
+                            @Override
+                            public void run() {
+                                if (progress != null && progress.getFragmentManager() != null) {
+                                    progress.getFragmentManager().popBackStack();
+                                }
+                            }
+
+                        };
+                        peer.connectTo(new DiscoveredPeer.ConnectionListener() {
+
+                            @Override
+                            public void onAccepted() {
+                                OnlineFragment.this.getActivity().runOnUiThread(dismiss);
+                            }
+
+                            @Override
+                            public void onDeclined() {
+                                final FragmentActivity activity = OnlineFragment.this.getActivity();
+                                activity.runOnUiThread(dismiss);
+                                activity.runOnUiThread(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+                                        UserBusyDialog
+                                                .getInstance("User " + peer.getName() + " is currently unavailable",dialogStyle)
+                                                .show(activity.getSupportFragmentManager(), "Busy");
+                                    }
+                                });
+                            }
+                        });
+                        return null;
+                    }
+
+                };
+                Fragment progress = ConnectingProgressFragment.create(action, connectingBackgroundId, connectTask, "Connecting", peer);
+                getFragmentManager().beginTransaction().replace(R.id.container, progress).addToBackStack("Connecting").commit();
+                connectTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, peer, progress);
 
             }
-
-            @Override
-            public void onDeclined() {
-
-            }
-        });
+        };
+        ConnectDialogFragment.getInstance(peer.getName(), dialogStyle, dialogMethod).show(getFragmentManager(), "ConnectConfirm");
     }
+
+    public static class UserBusyDialog extends DialogFragment {
+        private static final String MESSAGE = "message", DIALOG_STYLE = "dialogStyle";
+
+        public static UserBusyDialog getInstance(String message, int dialogStyle) {
+            UserBusyDialog fragment = new UserBusyDialog();
+            Bundle params = new Bundle();
+            params.putString(MESSAGE, message);
+            params.putInt(DIALOG_STYLE, dialogStyle);
+            fragment.setArguments(params);
+            return fragment;
+        }
+
+        @Override
+        public Dialog onCreateDialog(
+                Bundle savedInstanceState) {
+            Bundle params = getArguments();
+            if (params == null) {
+                return null;
+            }
+            int dialogStyle = params.getInt(DIALOG_STYLE);
+            String message = params.getString(MESSAGE);
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), dialogStyle);
+            builder.setMessage(message).setNeutralButton("Okay", null);
+            return builder.create();
+        }
+    }
+
+    public static class ConnectDialogFragment extends DialogFragment {
+        public ConnectDialogFragment() {
+        }
+
+        private static final String PEER_NAME = "peerName", DIALOG_STYLE = "dialogStyle", DIALOG_METHOD = "dialogMethod";
+
+        public static ConnectDialogFragment getInstance(String peerName, int dialogStyle, DialogMethod dialogMethod) {
+            ConnectDialogFragment fragment = new ConnectDialogFragment();
+            Bundle params = new Bundle();
+            params.putString(PEER_NAME, peerName);
+            params.putInt(DIALOG_STYLE, dialogStyle);
+            params.putParcelable(DIALOG_METHOD, dialogMethod);
+            fragment.setArguments(params);
+            return fragment;
+        }
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            Bundle params = getArguments();
+            if (params == null) {
+                return null;
+            }
+            int dialogStyle = params.getInt(DIALOG_STYLE);
+            String peerName = params.getString(PEER_NAME);
+            final DialogMethod dialogMethod = params.getParcelable(DIALOG_METHOD);
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), dialogStyle);
+            builder.setTitle("Connect to Peer?").setMessage("Open connection to " + peerName + "?");
+            builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if (dialogMethod != null)
+                        dialogMethod.invokeMethod();
+                }
+            });
+            builder.setNegativeButton("No", null).setInverseBackgroundForced(true);
+            Dialog dialog = builder.create();
+            dialog.setCanceledOnTouchOutside(true);
+            return dialog;
+        }
+    }
+
 
     //NOT IMPORTANT RIGHT NOW
     public static class StaticPeer implements DiscoveredPeer {
@@ -246,7 +365,11 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
         }
     }
 
-    //Remove it later
+    //TODO Remove it later
+    private int dialogStyle = android.R.style.Theme_Holo_Panel;
+    private String action = "TouchTrails";
+    private int connectingBackgroundId = android.R.color.black;
+
     public void referesh() {
         Button button = (Button) getView().findViewById(R.id.btn_refresh);
         button.setOnClickListener(new View.OnClickListener() {

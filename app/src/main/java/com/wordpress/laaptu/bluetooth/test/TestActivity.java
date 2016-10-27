@@ -16,6 +16,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.wordpress.laaptu.bluetooth.R;
+import com.wordpress.laaptu.bluetooth.test.bluetooth.StoredBT;
+
+import java.lang.reflect.InvocationTargetException;
 
 import timber.log.Timber;
 
@@ -27,54 +30,76 @@ public class TestActivity extends AppCompatActivity {
         setContentView(R.layout.activity_test);
         addFirstFragment();
         //bluetoothTest();
+        createBluetooth();
     }
+
     private BluetoothAdapter bluetoothAdapter;
-    private void bluetoothTest(){
-         bluetoothAdapter =BluetoothAdapter.getDefaultAdapter();
-         bluetoothAdapter.startDiscovery();
+
+    private void bluetoothTest() {
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        bluetoothAdapter.startDiscovery();
+    }
+
+    private static final String BT_NOTE3 = "38:94:96:F2:37:60";
+
+    private void createBluetooth() {
+//        Timber.d("Stored bluetooth is null or not =%b and address = %s", StoredBT.getInstance().bluetoothDevice == null,
+//                StoredBT.getInstance().bluetoothDevice == null ? "NULL" : StoredBT.getInstance().bluetoothDevice.getAddress());
+//        try {
+//            BluetoothDevice device = BluetoothDevice.class.getConstructor(String.class).newInstance(BT_NOTE3);
+//            if (device == null) {
+//                Timber.d("Device is null");
+//            } else {
+//                Timber.d("Device address =%s", device.getAddress());
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         Timber.d("ON PAUSE");
-        try{
+        try {
             unregisterReceiver(receiver);
-        }catch(Exception e){
+        } catch (Exception e) {
 
         }
         if (bluetoothAdapter != null)
             bluetoothAdapter.cancelDiscovery();
     }
 
-    private final BroadcastReceiver receiver =new BroadcastReceiver() {
+    private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(intent.getAction().equals(BluetoothDevice.ACTION_FOUND)){
+            if (intent.getAction().equals(BluetoothDevice.ACTION_FOUND)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                Timber.d("Device found =%s",device.getAddress());
+                Timber.d("Device found =%s", device.getAddress());
             }
 
         }
     };
 
     private IntentFilter foundAction;
+
     @Override
     protected void onResume() {
         super.onResume();
         Timber.d("ON RESUME");
         foundAction = new IntentFilter();
         foundAction.addAction(BluetoothDevice.ACTION_FOUND);
-        registerReceiver(receiver,foundAction);
+        registerReceiver(receiver, foundAction);
         bluetoothTest();
     }
 
-    private void addFirstFragment(){
-        getSupportFragmentManager().beginTransaction().replace(R.id.container,new FirstFragment()).commit();
+    private void addFirstFragment() {
+        getSupportFragmentManager().beginTransaction().replace(R.id.container, new FirstFragment()).commit();
 
     }
-    private void addSecondFragment(){
-        getSupportFragmentManager().beginTransaction().replace(R.id.container,new SecondFragment())
+
+    private void addSecondFragment() {
+        getSupportFragmentManager().beginTransaction().replace(R.id.container, new SecondFragment())
                 .addToBackStack(null).commit();
 
     }
@@ -83,7 +108,7 @@ public class TestActivity extends AppCompatActivity {
         @Nullable
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            return inflater.inflate(R.layout.fragment_first,container,false);
+            return inflater.inflate(R.layout.fragment_first, container, false);
         }
 
         @Override
@@ -100,11 +125,11 @@ public class TestActivity extends AppCompatActivity {
     }
 
 
-    public static class SecondFragment extends Fragment{
+    public static class SecondFragment extends Fragment {
         @Nullable
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            return inflater.inflate(R.layout.fragment_second,container,false);
+            return inflater.inflate(R.layout.fragment_second, container, false);
         }
 
         @Override

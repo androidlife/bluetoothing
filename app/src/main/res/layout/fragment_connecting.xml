@@ -1,0 +1,89 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/conectingFragment"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/bg_video_connecting_progress"
+    android:orientation="vertical"
+    android:weightSum="7">
+
+    <TextView
+        android:id="@+id/connectingTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center"
+        android:layout_marginTop="@dimen/connect_title_margin"
+        android:text="@string/connecting_banner"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textSize="@dimen/connecting_title_text_size" />
+
+    <ProgressBar
+        android:id="@+id/progressBar1"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/connectingTitle"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center"
+        android:layout_marginTop="@dimen/connect_progress_margin" />
+
+    <TextView
+        android:id="@+id/stopButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/progressBar1"
+        android:layout_centerInParent="true"
+        android:layout_gravity="center"
+        android:layout_marginTop="@dimen/connect_stop_margin"
+        android:text="@string/stop_connecting_label"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@android:color/holo_blue_light"
+        android:textSize="@dimen/connect_stop_text_size" />
+
+    <ImageView
+        android:id="@+id/userPic1"
+        android:layout_width="@dimen/connect_user_size"
+        android:layout_height="@dimen/connect_user_size"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/stopButton"
+        android:layout_marginLeft="@dimen/connect_user_x_margin"
+        android:layout_marginTop="@dimen/connect_user_y_margin"
+        android:contentDescription="@string/user_pic_description"
+        android:src="@drawable/me_pic" />
+
+    <TextView
+        android:id="@+id/userNameView1"
+        android:layout_width="@dimen/connect_user_name_width"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/userPic1"
+        android:layout_marginTop="@dimen/connect_user_name_margin"
+        android:gravity="center"
+        android:text="@string/me"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <ImageView
+        android:id="@+id/userPic2"
+        android:layout_width="@dimen/connect_user_size"
+        android:layout_height="@dimen/connect_user_size"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/userPic1"
+        android:layout_marginRight="@dimen/connect_user_x_margin"
+        android:contentDescription="@string/user_pic_description"
+        android:src="@drawable/stream_1" />
+
+    <TextView
+        android:id="@+id/userNameView2"
+        android:layout_width="@dimen/connect_user_name_width"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@id/userNameView1"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/userPic2"
+        android:layout_toRightOf="@id/userNameView1"
+        android:gravity="center"
+        android:text="@string/empty_string"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+</RelativeLayout>

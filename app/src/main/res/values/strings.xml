@@ -3,4 +3,10 @@
     <string name="error_few_permission_granted">App won\'t perform well with few permissions.</string>
     <string name="status_indicator_description">Status Indicator</string>
     <string name="user_pic_description">User Picture</string>
+    <string name="stop_connecting_label">Stop Connecting</string>
+    <string name="connecting_banner">Connecting</string>
+    <string name="empty_string"></string>
+    <string name="me">Me</string>
+
+
 </resources>

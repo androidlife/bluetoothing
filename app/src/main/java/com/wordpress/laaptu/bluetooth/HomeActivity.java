@@ -29,6 +29,7 @@ import android.widget.Toast;
 import com.wordpress.laaptu.bluetooth.test.ChatActivity;
 import com.wordpress.laaptu.bluetooth.test.MainActivity;
 import com.wordpress.laaptu.bluetooth.test.TestActivity;
+import com.wordpress.laaptu.bluetooth.test.connect.ConnectActivity;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,7 +60,7 @@ public class HomeActivity extends AppCompatActivity {
   }
 
   private void goToMainActivity() {
-    startActivity(new Intent(this, MainActivity.class));
+    startActivity(new Intent(this, ConnectActivity.class));
     this.finish();
   }
 

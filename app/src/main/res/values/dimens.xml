@@ -6,4 +6,37 @@
     <dimen name="contact_status_size">15dp</dimen>
     <dimen name="main_activity_button_margin">10dp</dimen>
     <dimen name="contact_name_size">24sp</dimen>
+
+
+    <dimen name="main_activity_button_text_size">24sp</dimen>
+    <dimen name="switch_padding">10dp</dimen>
+    <dimen name="connecting_title_text_size">32sp</dimen>
+    <dimen name="menu_button_width">200dp</dimen>
+    <dimen name="menu_button_height">47dp</dimen>
+    <dimen name="menu_button_first_top">190dp</dimen>
+    <dimen name="menu_button_remaining_top">23dp</dimen>
+    <dimen name="game_button_size">75dp</dimen>
+    <dimen name="game_button_x_margin">30dp</dimen>
+    <dimen name="game_button_y_margin">20dp</dimen>
+    <dimen name="connect_title_margin">100dp</dimen>
+    <dimen name="connect_progress_margin">25dp</dimen>
+    <dimen name="connect_stop_margin">25dp</dimen>
+    <dimen name="connect_user_size">100dp</dimen>
+    <dimen name="connect_user_y_margin">35dp</dimen>
+    <dimen name="connect_user_x_margin">26dp</dimen>
+    <dimen name="connect_user_name_width">150dp</dimen>
+    <dimen name="connect_user_name_margin">25dp</dimen>
+    <dimen name="connect_stop_text_size">24sp</dimen>
+    <dimen name="connect_me_size">100dp</dimen>
+    <dimen name="connect_me_text_size">32sp</dimen>
+
+    <dimen name="preview_thumbnail_width">150dp</dimen>
+    <dimen name="preview_thumbnail_height">200dp</dimen>
+    <dimen name="gallery_height">220dp</dimen>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="main_activity_title_margin_top">56dp</dimen>
+    <dimen name="main_activity_title_text_size">36sp</dimen>
+    <dimen name="main_activity_footer_image_width">180dp</dimen>
+    <dimen name="main_activity_footer_image_height">150dp</dimen>
+    <dimen name="main_activity_footer_image_margin_bottom">-18dp</dimen>
 </resources>
