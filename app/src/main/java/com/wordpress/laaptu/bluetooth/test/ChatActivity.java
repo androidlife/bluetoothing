@@ -16,6 +16,7 @@ import com.wordpress.laaptu.bluetooth.R;
 import com.wordpress.laaptu.bluetooth.test.bluetooth.BluetoothConnectionMonitor;
 import com.wordpress.laaptu.bluetooth.test.bluetooth.ConnectionMonitor;
 import com.wordpress.laaptu.bluetooth.test.socket.DataConduit;
+import com.wordpress.laaptu.bluetooth.test.socket.SocketProvider;
 
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
@@ -56,7 +57,7 @@ public class ChatActivity extends AppCompatActivity implements OnConnectionLostL
 
 
         outgoingMessages = new LinkedBlockingQueue<String>();
-        conduit = new DataConduit.TCPBluetooth();
+        conduit = new DataConduit.TCPBluetooth(SocketProvider.getInstance().address,SocketProvider.getInstance().isServer);
         new StartComm().execute(conduit, new WeakReference<ChatActivity>(this));
         connectionMonitor = new BluetoothConnectionMonitor();
         sendRandomText();

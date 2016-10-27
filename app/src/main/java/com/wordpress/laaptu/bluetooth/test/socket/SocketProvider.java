@@ -19,5 +19,6 @@ public class SocketProvider {
         return instance;
     }
 
-    public BluetoothSocket socket;
+    public String address;
+    public boolean isServer;
 }

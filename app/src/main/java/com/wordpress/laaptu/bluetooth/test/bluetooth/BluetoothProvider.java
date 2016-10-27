@@ -319,7 +319,7 @@ public class BluetoothProvider implements PeerDiscoveryProvider, BluetoothClient
         //navigate to chatActivity
         /**When this is a serrver
          * connectionListener is null*/
-        SocketProvider.getInstance().socket = bluetoothSocket;
+        //SocketProvider.getInstance().socket = bluetoothSocket;
         Timber.d("navigate to chat activity now");
         activity.runOnUiThread(new Runnable() {
             @Override

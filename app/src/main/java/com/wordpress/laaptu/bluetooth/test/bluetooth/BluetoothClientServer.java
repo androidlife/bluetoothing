@@ -102,9 +102,10 @@ public class BluetoothClientServer {
 
     private void deliverTheSocket(BluetoothSocket bluetoothSocket, boolean isServer) {
         this.isServer = isServer;
-        SocketProvider.getInstance().socket = bluetoothSocket;
+        SocketProvider.getInstance().address = bluetoothSocket.getRemoteDevice().getAddress();
+        SocketProvider.getInstance().isServer = isServer;
         stopSendMessageThread();
-        sendMessageThread = new SendMessageThread(SocketProvider.getInstance().socket, isServer);
+        sendMessageThread = new SendMessageThread(bluetoothSocket, isServer);
         sendMessageThread.start();
         // need to create a dialog
         // need to save the peer name as well
@@ -141,16 +142,13 @@ public class BluetoothClientServer {
 
     //common to both server and client
     private void onConnectionSuccess(boolean success) {
+        stopSendMessageThread();
         if (success) {
             stopConnectToServerThread();
             if (clientServerListener != null)
-                clientServerListener.onConnectionAccept(SocketProvider.getInstance().socket);
+                clientServerListener.onConnectionAccept(null);
         } else {
-            try {
-                SocketProvider.getInstance().socket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+
             rejectConnection();
         }
     }
@@ -277,9 +275,11 @@ public class BluetoothClientServer {
         private InputStream inputStream;
         private OutputStream outputStream;
         private boolean read = true;
+        private BluetoothSocket socket;
 
 
         public SendMessageThread(BluetoothSocket socket, boolean isServer) {
+            this.socket = socket;
             InputStream inputStreamTmp = null;
             OutputStream outputStreamTmp = null;
             try {
@@ -321,9 +321,14 @@ public class BluetoothClientServer {
         }
 
         public void cancel() {
-            read = false;
-            inputStream = null;
-            outputStream = null;
+            try {
+                read = false;
+                outputStream.close();
+                inputStream.close();
+                socket.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
     }

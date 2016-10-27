@@ -1,7 +1,11 @@
 package com.wordpress.laaptu.bluetooth.test.socket;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
+
+import com.wordpress.laaptu.bluetooth.test.bluetooth.BluetoothClientServer;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,6 +19,9 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.util.UUID;
+
+import timber.log.Timber;
 
 public interface DataConduit {
     int TIMEOUT = 90000;
@@ -269,6 +276,9 @@ public interface DataConduit {
 
     }
 
+    public static final String SERVER_NAME = "LiveTouchChatServer";
+    public static final UUID SERVER_UUID = UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a67");
+
     public static class TCPBluetooth implements DataConduit {
 
         private static final String TAG = "TCPDataConduit";
@@ -283,19 +293,64 @@ public interface DataConduit {
         private boolean isHost;
         private BluetoothSocket socket;
 
-        public TCPBluetooth() {
-            this.localPort = localPort;
-            this.remotePort = remotePort;
+        public TCPBluetooth(String clientIp, boolean isHost) {
             this.clientIp = clientIp;
             this.isHost = isHost;
-            socket = SocketProvider.getInstance().socket;
+            //socket = SocketProvider.getInstance().socket;
             inSize = ByteBuffer.allocate(4);
             outSize = ByteBuffer.allocate(4);
         }
 
+        private void createServer() {
+            int retryCount = 0;
+            BluetoothServerSocket server = null;
+            try {
+                server = BluetoothAdapter.getDefaultAdapter().listenUsingInsecureRfcommWithServiceRecord(SERVER_NAME, SERVER_UUID);
+            } catch (Exception e) {
+                Timber.d("Unable to create a server ");
+                e.printStackTrace();
+                //BluetoothClientServer.this.sendError(BluetoothClientServer.Error.ERROR_SERVER_CREATION);
+            }
+
+            while (server != null && socket == null && retryCount < 5) {
+                try {
+                    socket = server.accept();
+                } catch (IOException e) {
+                    ++retryCount;
+                    e.printStackTrace();
+                }
+            }
+            if (server != null) {
+                try {
+                    server.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            Log.i(TAG, "Server connection accepted");
+        }
+
+        private void connectToServer() {
+            int retryCount = 0;
+            while (socket == null && retryCount < 5) {
+                try {
+                    socket = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(clientIp).createInsecureRfcommSocketToServiceRecord(SERVER_UUID);
+                    socket.connect();
+                } catch (Exception e) {
+                    ++retryCount;
+                    Timber.e(
+                            "Cannot create socket that needs to be passed to the server, going for fallback socket");
+                    e.printStackTrace();
+                }
+            }
+        }
+
         @Override
         public void start() {
-//            int retryCount = 0;
+            if (isHost)
+                createServer();
+            else
+                connectToServer();
             if (socket != null) {
                 try {
                     inputStream = socket.getInputStream();
@@ -363,7 +418,7 @@ public interface DataConduit {
                         Log.e(TAG, "Error reading incoming packet size");
                         return false;
                     }
-                    //incoming.limit(inSize.getInt());
+                    incoming.limit(inSize.getInt());
                     if (!actualRead(incoming)) {
                         Log.e(TAG, "Error reading incoming packet of " + incoming.limit() + " bytes");
                     }
