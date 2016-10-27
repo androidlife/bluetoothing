@@ -7,16 +7,15 @@ import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.UUID;
 
 import timber.log.Timber;
 
-import static android.R.attr.port;
-
 public class BluetoothClientServer {
     static final String SERVER_NAME = "LiveTouchChatServer";
     static final UUID SERVER_UUID = UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a67");
+    static final String MSG_REQUEST_CONNECT = "requestConnect", REQUEST_ACCEPT = "accept",
+            REQUEST_REJECT = "reject";
 
     public static class Error {
         static final int ERROR_SERVER_CREATION = 0x1, ERROR_CONNECT_SERVER_SOCKET = 0x2;
@@ -77,13 +76,19 @@ public class BluetoothClientServer {
             clientServerListener.onError(errorCode);
     }
 
-    private void deliverTheSocket(BluetoothSocket bluetoothSocket) {
+    private void deliverTheSocket(BluetoothSocket bluetoothSocket, boolean isServer) {
         Timber.d("Successfully connected");
+        bluetoothSocket.
         if (clientServerListener != null) {
             clientServerListener.onConnectionAccept(bluetoothSocket);
-        }else{
+        } else {
             Timber.d("clientServerListener is null");
         }
+    }
+
+    private void rejectConnection() {
+        if (clientServerListener != null)
+            clientServerListener.onConnectionReject();
     }
 
     private void pauseDiscovery(boolean pause) {
@@ -122,6 +127,8 @@ public class BluetoothClientServer {
                 } catch (Exception e) {
                     Timber.e("Socket creation problem");
                     e.printStackTrace();
+                    BluetoothClientServer.this.rejectConnection();
+                    return;
                 }
                 if (socket != null) {
                     //connectedIncomingSocketToOurServer(socket);
@@ -129,8 +136,11 @@ public class BluetoothClientServer {
                     // if denied, do nothing
                     // else pass the socket and close this
                     Timber.d("This is server now");
-                    BluetoothClientServer.this.deliverTheSocket(socket);
-                    cancel();
+                    BluetoothClientServer.this.deliverTheSocket(socket, true);
+                    //right now not close the server
+                    //cancel();
+                } else {
+                    BluetoothClientServer.this.rejectConnection();
                 }
             }
         }
@@ -163,6 +173,7 @@ public class BluetoothClientServer {
                         "Cannot create socket that needs to be passed to the server, going for fallback socket");
                 e.printStackTrace();
                 BluetoothClientServer.this.sendError(Error.ERROR_CONNECT_SERVER_SOCKET);
+                BluetoothClientServer.this.rejectConnection();
             }
             if (tmp != null) Timber.d("Created socket to be passed to server without reflection");
             socketTobePassedToServer = tmp;
@@ -181,11 +192,12 @@ public class BluetoothClientServer {
                 Timber.e("Cannot connect to the server,using fallback socket");
                 e.printStackTrace();
                 cancel();
+                BluetoothClientServer.this.rejectConnection();
                 return;
             }
             //connectedToServerOurSocket(socketTobePassedToServer);
             Timber.d("This is client now");
-            BluetoothClientServer.this.deliverTheSocket(socketTobePassedToServer);
+            BluetoothClientServer.this.deliverTheSocket(socketTobePassedToServer, false);
 
         }
 
@@ -196,6 +208,10 @@ public class BluetoothClientServer {
 //                e.printStackTrace();
 //            }
         }
+    }
+
+    private class SendMessageThread extends Thread{
+
     }
 
     public interface OnClientServerListener {
