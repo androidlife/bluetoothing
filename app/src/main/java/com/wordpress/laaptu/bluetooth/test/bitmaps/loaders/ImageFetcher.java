@@ -22,7 +22,9 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
-import android.util.Log;
+
+
+import com.wordpress.laaptu.bluetooth.test.log.Logger;
 
 import java.io.FileDescriptor;
 
@@ -30,18 +32,20 @@ import java.io.FileDescriptor;
  * A simple subclass of {@link ImageWorker} that resizes images from resources given a target width
  * and height. Useful for when the input images might be too large to simply load directly into
  * memory.
+ * </p>
+ *Referenced from @see <a href= "https://developer.android.com/training/displaying-bitmaps/cache-bitmap.html"></>
  */
 public class ImageFetcher extends ImageWorker {
     private static final String TAG = "ImageFetcher";
-    protected int mImageWidth;
-    protected int mImageHeight;
+    protected int imageWidth;
+    protected int imageHeight;
 
     /**
      * Initialize providing a single target image size (used for both width and height);
      *
      * @param context
-     * @param imageWidth
-     * @param imageHeight
+     * @param imageWidth The requested width of the bitmap
+     * @param imageHeight The requested height of the bitmap
      */
     public ImageFetcher(Context context, int imageWidth, int imageHeight) {
         super(context);
@@ -52,7 +56,7 @@ public class ImageFetcher extends ImageWorker {
      * Initialize providing a single target image size (used for both width and height);
      *
      * @param context
-     * @param imageSize
+     * @param imageSize The requested size of the bitmap
      */
     public ImageFetcher(Context context, int imageSize) {
         super(context);
@@ -64,12 +68,12 @@ public class ImageFetcher extends ImageWorker {
     /**
      * Set the target image width and height.
      *
-     * @param width
-     * @param height
+     * @param width The width of the targeted bitmap
+     * @param height The height of the targeted bitmap
      */
     public void setImageSize(int width, int height) {
-        mImageWidth = width;
-        mImageHeight = height;
+        imageWidth = width;
+        imageHeight = height;
     }
 
     /**
@@ -89,9 +93,9 @@ public class ImageFetcher extends ImageWorker {
      * @return
      */
     private Bitmap processBitmap(int resId) {
-        Log.d(TAG, "processBitmap - " + resId);
-        return decodeSampledBitmapFromResource(mResources, resId, mImageWidth,
-                mImageHeight, getImageCache());
+        Logger.d(TAG, "processBitmap - " + resId);
+        return decodeSampledBitmapFromResource(resources, resId, imageWidth,
+                imageHeight, getImageCache());
     }
 
     @Override

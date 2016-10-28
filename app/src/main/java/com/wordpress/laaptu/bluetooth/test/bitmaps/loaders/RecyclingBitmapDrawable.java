@@ -21,20 +21,20 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.util.Log;
 
-
 /**
  * A BitmapDrawable that keeps track of whether it is being displayed or cached.
  * When the drawable is no longer being displayed or cached,
  * {@link Bitmap#recycle() recycle()} will be called on this drawable's bitmap.
+ * Referenced from @see <a href= "https://developer.android.com/training/displaying-bitmaps/cache-bitmap.html"></>
  */
 public class RecyclingBitmapDrawable extends BitmapDrawable {
 
     static final String TAG = "CountingBitmapDrawable";
 
-    private int mCacheRefCount = 0;
-    private int mDisplayRefCount = 0;
+    private int cacheRefCount = 0;
+    private int displayRefCount = 0;
 
-    private boolean mHasBeenDisplayed;
+    private boolean hasBeenDisplayed;
 
     public RecyclingBitmapDrawable(Resources res, Bitmap bitmap) {
         super(res, bitmap);
@@ -51,10 +51,10 @@ public class RecyclingBitmapDrawable extends BitmapDrawable {
         //BEGIN_INCLUDE(set_is_displayed)
         synchronized (this) {
             if (isDisplayed) {
-                mDisplayRefCount++;
-                mHasBeenDisplayed = true;
+                displayRefCount++;
+                hasBeenDisplayed = true;
             } else {
-                mDisplayRefCount--;
+                displayRefCount--;
             }
         }
 
@@ -73,9 +73,9 @@ public class RecyclingBitmapDrawable extends BitmapDrawable {
         //BEGIN_INCLUDE(set_is_cached)
         synchronized (this) {
             if (isCached) {
-                mCacheRefCount++;
+                cacheRefCount++;
             } else {
-                mCacheRefCount--;
+                cacheRefCount--;
             }
         }
 
@@ -88,7 +88,7 @@ public class RecyclingBitmapDrawable extends BitmapDrawable {
         //BEGIN_INCLUDE(check_state)
         // If the drawable cache and display ref counts = 0, and this drawable
         // has been displayed, then recycle
-        if (mCacheRefCount <= 0 && mDisplayRefCount <= 0 && mHasBeenDisplayed
+        if (cacheRefCount <= 0 && displayRefCount <= 0 && hasBeenDisplayed
                 && hasValidBitmap()) {
 
             Log.d(TAG, "No longer being used or cached so recycling. "

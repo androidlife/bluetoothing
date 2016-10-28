@@ -6,7 +6,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.support.v4.util.LruCache;
-import android.util.Log;
+
+
+import com.wordpress.laaptu.bluetooth.test.log.Logger;
 
 import java.lang.ref.SoftReference;
 import java.util.Collections;
@@ -15,13 +17,21 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
+ * Implementation of {@link LruCache} is an in-memory cache.
+ * This means that there is a finite number of images that can be cached.
+ * A good approach to determine the cache size is to calculate it based on the available heap memory.
+ * </p>
+ * <p>
+ * We will have to ask the cache for image and if it is not found, load it and place it into the cache.
+ *
+ *Referenced from @see <a href= "https://developer.android.com/training/displaying-bitmaps/cache-bitmap.html"></>
  */
 
 public class ImageCache {
 
     private static final String TAG = "ImageCache";
-    private LruCache<Integer, BitmapDrawable> mMemoryCache;
-    private Set<SoftReference<Bitmap>> mReusableBitmaps;
+    private LruCache<Integer, BitmapDrawable> memoryCache;
+    private Set<SoftReference<Bitmap>> reusableBitmaps;
 
     private ImageCache() {
         init();
@@ -31,10 +41,10 @@ public class ImageCache {
         final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
         final int cacheSize = maxMemory / 8;
         if (Utils.hasHoneycomb()) {
-            mReusableBitmaps =
+            reusableBitmaps =
                     Collections.synchronizedSet(new HashSet<SoftReference<Bitmap>>());
         }
-        mMemoryCache = new LruCache<Integer, BitmapDrawable>(cacheSize) {
+        memoryCache = new LruCache<Integer, BitmapDrawable>(cacheSize) {
             /**
              * Measure item size in kilobytes rather than units which is more practical
              * for a bitmap cache
@@ -60,13 +70,13 @@ public class ImageCache {
         }
 
         // Add to memory cache
-        if (mMemoryCache != null) {
+        if (memoryCache != null) {
             if (RecyclingBitmapDrawable.class.isInstance(value)) {
                 // The removed entry is a recycling drawable, so notify it
                 // that it has been added into the memory cache
                 ((RecyclingBitmapDrawable) value).setIsCached(true);
             }
-            mMemoryCache.put(data, value);
+            memoryCache.put(data, value);
         }
     }
 
@@ -80,11 +90,11 @@ public class ImageCache {
         //BEGIN_INCLUDE(get_bitmap_from_mem_cache)
         BitmapDrawable memValue = null;
 
-        if (mMemoryCache != null) {
-            memValue = mMemoryCache.get(data);
+        if (memoryCache != null) {
+            memValue = memoryCache.get(data);
         }
 
-        Log.d(TAG, "Memory cache hit");
+        Logger.d(TAG, "Memory cache hit");
 
         return memValue;
         //END_INCLUDE(get_bitmap_from_mem_cache)
@@ -95,12 +105,12 @@ public class ImageCache {
      * this includes disk access so this should not be executed on the main/UI thread.
      */
     public void clearCache() {
-        if (mMemoryCache != null) {
-            mMemoryCache.evictAll();
-            Log.d(TAG, "Memory cache cleared");
+        if (memoryCache != null) {
+            memoryCache.evictAll();
+            Logger.d(TAG, "Memory cache cleared");
         }
-        if (mReusableBitmaps != null)
-            mReusableBitmaps.clear();
+        if (reusableBitmaps != null)
+            reusableBitmaps.clear();
     }
 
 
@@ -112,9 +122,9 @@ public class ImageCache {
         //BEGIN_INCLUDE(get_bitmap_from_reusable_set)
         Bitmap bitmap = null;
 
-        if (mReusableBitmaps != null && !mReusableBitmaps.isEmpty()) {
-            synchronized (mReusableBitmaps) {
-                final Iterator<SoftReference<Bitmap>> iterator = mReusableBitmaps.iterator();
+        if (reusableBitmaps != null && !reusableBitmaps.isEmpty()) {
+            synchronized (reusableBitmaps) {
+                final Iterator<SoftReference<Bitmap>> iterator = reusableBitmaps.iterator();
                 Bitmap item;
 
                 while (iterator.hasNext()) {
