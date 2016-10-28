@@ -12,6 +12,10 @@ import java.util.Random;
 public class UserPool {
     private static Context contextU;
 
+    public static String getDefaultUserName() {
+        return "DefaultUser";
+    }
+
     public static class User {
         public User(String name, int smallportraitid, int portraitid) {
             this.name = name;
@@ -49,6 +53,7 @@ public class UserPool {
     }
 
     private static final User busyUser = new User("User4", R.drawable.stream_4, R.drawable.stream_4);
+
     public static User getBusyUser() {
         return busyUser;
     }
