@@ -52,7 +52,7 @@ public class ConnectActivity extends FragmentActivity implements ConnectionMonit
     private void setThemeAsPerIntentAction(Intent intent) {
         String action = intent.getStringExtra("action");
         if (action == null || action.isEmpty()) {
-            Logger.e(TAG, "Action is invalid");
+            Logger.e("Action is invalid");
         }
         int themeId = -1;
         if (Extras.ACTION_TOUCHTRAILS.equals(action)
