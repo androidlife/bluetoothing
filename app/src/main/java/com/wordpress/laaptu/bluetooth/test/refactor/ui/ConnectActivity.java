@@ -1,5 +1,6 @@
 package com.wordpress.laaptu.bluetooth.test.refactor.ui;
 
+import android.bluetooth.BluetoothAdapter;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;

@@ -46,6 +46,10 @@ public class BluetoothConnectionMonitor implements ConnectionMonitor {
 
     @Override
     public void start() {
+        if (BluetoothAdapter.getDefaultAdapter() == null || !BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+            notifyConnectionLost();
+            return;
+        }
         IntentFilter intentFilter = new IntentFilter();
         switch (listenType) {
             case LISTEN_FOR_BLUETOOTH_CONNECTION:
