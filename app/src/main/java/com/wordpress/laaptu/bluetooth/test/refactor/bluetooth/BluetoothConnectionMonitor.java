@@ -8,10 +8,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
-import com.wordpress.laaptu.bluetooth.test.log.Logger;
 import com.wordpress.laaptu.bluetooth.test.refactor.base.ConnectionMonitor;
 
 import java.lang.ref.WeakReference;
+
+import timber.log.Timber;
 
 
 /**
@@ -98,7 +99,7 @@ public class BluetoothConnectionMonitor implements ConnectionMonitor {
                 break;
             case BluetoothAdapter.ERROR:
             case BluetoothAdapter.STATE_OFF:
-                Logger.d("Bluetooth device may be turned off");
+                Timber.d("Bluetooth device may be turned off");
                 notifyConnectionLost();
                 break;
             default:
@@ -113,7 +114,7 @@ public class BluetoothConnectionMonitor implements ConnectionMonitor {
                 onBluetoothStateChanged(intent);
             } else if (intent.getAction().equals(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED)
                     || intent.getAction().equals(BluetoothDevice.ACTION_ACL_DISCONNECTED)) {
-                Logger.d("Bluetooth peer connection is lost");
+                Timber.d("Bluetooth peer connection is lost");
                 notifyConnectionLost();
             }
 

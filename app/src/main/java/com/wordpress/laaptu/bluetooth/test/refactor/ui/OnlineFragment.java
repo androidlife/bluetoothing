@@ -14,10 +14,15 @@ import android.view.ViewGroup;
 import com.wordpress.laaptu.bluetooth.R;
 import com.wordpress.laaptu.bluetooth.test.base.DiscoveredPeer;
 import com.wordpress.laaptu.bluetooth.test.bitmaps.loaders.ImageFetcher;
+import com.wordpress.laaptu.bluetooth.test.log.Logger;
 import com.wordpress.laaptu.bluetooth.test.refactor.Extras;
 import com.wordpress.laaptu.bluetooth.test.refactor.UserPool;
 
 import java.util.ArrayList;
+
+import timber.log.Timber;
+
+import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
 
 /**
  */
@@ -37,6 +42,7 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
     @Override
     public void onResume() {
         super.onResume();
+        Timber.d("onResume()");
         startUI();
     }
 
@@ -77,6 +83,7 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
     @Override
     public void onPause() {
         super.onPause();
+        Timber.d("onPause()");
         stopUI();
     }
 

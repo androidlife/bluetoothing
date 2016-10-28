@@ -7,10 +7,11 @@ import android.support.v4.app.FragmentActivity;
 import android.widget.Toast;
 
 import com.wordpress.laaptu.bluetooth.R;
-import com.wordpress.laaptu.bluetooth.test.log.Logger;
 import com.wordpress.laaptu.bluetooth.test.refactor.Extras;
 import com.wordpress.laaptu.bluetooth.test.refactor.base.ConnectionMonitor;
 import com.wordpress.laaptu.bluetooth.test.refactor.bluetooth.BluetoothConnectionMonitor;
+
+import timber.log.Timber;
 
 public class ConnectActivity extends FragmentActivity implements ConnectionMonitor.OnConnectionListener {
 
@@ -31,6 +32,7 @@ public class ConnectActivity extends FragmentActivity implements ConnectionMonit
 
     @Override
     protected void onPause() {
+        Timber.d("onPause()");
         if (connectionMonitor != null) {
             connectionMonitor.stop();
             connectionMonitor = null;
@@ -40,6 +42,7 @@ public class ConnectActivity extends FragmentActivity implements ConnectionMonit
 
     @Override
     protected void onResume() {
+        Timber.d("onResume()");
         connectionMonitor = new BluetoothConnectionMonitor(this, this, BluetoothConnectionMonitor.LISTEN_FOR_BLUETOOTH_DEVICE);
         connectionMonitor.start();
         Intent intent = getIntent();
@@ -52,7 +55,7 @@ public class ConnectActivity extends FragmentActivity implements ConnectionMonit
     private void setThemeAsPerIntentAction(Intent intent) {
         String action = intent.getStringExtra("action");
         if (action == null || action.isEmpty()) {
-            Logger.e("Action is invalid");
+            Timber.e("Action is invalid");
         }
         int themeId = -1;
         if (Extras.ACTION_TOUCHTRAILS.equals(action)

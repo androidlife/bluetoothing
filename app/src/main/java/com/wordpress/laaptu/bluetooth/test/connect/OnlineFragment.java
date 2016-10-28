@@ -371,14 +371,14 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
     private int connectingBackgroundId = android.R.color.black;
 
     public void referesh() {
-        Button button = (Button) getView().findViewById(R.id.btn_refresh);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (discoveryProvider != null)
-                    discoveryProvider.reload();
-            }
-        });
+//        Button button = (Button) getView().findViewById(R.id.btn_refresh);
+//        button.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (discoveryProvider != null)
+//                    discoveryProvider.reload();
+//            }
+//        });
 
     }
 }
