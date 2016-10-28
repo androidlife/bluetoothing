@@ -12,22 +12,99 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.wordpress.laaptu.bluetooth.R;
-import com.wordpress.laaptu.bluetooth.test.bluetooth.UserPool;
+import com.wordpress.laaptu.bluetooth.test.base.DiscoveredPeer;
+import com.wordpress.laaptu.bluetooth.test.bitmaps.loaders.ImageFetcher;
 import com.wordpress.laaptu.bluetooth.test.refactor.Extras;
+import com.wordpress.laaptu.bluetooth.test.refactor.UserPool;
+
+import java.util.ArrayList;
 
 /**
  */
 
-public class OnlineFragment extends Fragment {
+public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemClickListener {
 
     String action = Extras.ACTION_TOUCHCHAT, username = UserPool.getDefaultUserName();
     private int dialogStyle;
     private int connectingBackgroundId;
     private int backgroundId = -1;
     private RecyclerView contactList;
+    private ImageFetcher imageFetcher;
+    private PeerListAdapter peerAdapter;
+    private ArrayList<DiscoveredPeer> staticPeers;
 
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        startUI();
+    }
 
+    private void startUI() {
+        imageFetcher = new ImageFetcher(getActivity(), getResources().getDimensionPixelSize(R.dimen.contact_pic_size));
+        contactList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (imageFetcher == null)
+                    return;
+                if (newState == RecyclerView.SCROLL_STATE_IDLE)
+                    imageFetcher.setPauseWork(false);
+                else
+                    imageFetcher.setPauseWork(true);
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+            }
+        });
+
+        peerAdapter = new PeerListAdapter(getActivity(), contactList, imageFetcher);
+        UserPool.setContext(getActivity());
+        staticPeers = new ArrayList<>();
+        staticPeers.add(new UserPool.StaticPeer(UserPool.getBusyUser(), "Busy", 3));
+        UserPool.User[] offlineUsers = UserPool.getOfflineUsers();
+        for (UserPool.User offlineUser : offlineUsers) {
+            staticPeers.add(new UserPool.StaticPeer(offlineUser, "Offline", 4));
+        }
+
+        peerAdapter.addAll(staticPeers);
+        peerAdapter.setOnItemClickListener(this);
+        contactList.setAdapter(peerAdapter);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        stopUI();
+    }
+
+    private void stopUI() {
+        if (contactList != null) {
+            contactList.addOnScrollListener(null);
+            contactList.setAdapter(null);
+        }
+        if (peerAdapter != null) {
+            peerAdapter.clearAll();
+            peerAdapter = null;
+        }
+        if (staticPeers != null) {
+            staticPeers.clear();
+            staticPeers = null;
+        }
+
+        if (imageFetcher != null) {
+            imageFetcher.setExitTasksEarly(true);
+            imageFetcher.clearCache();
+            imageFetcher = null;
+        }
+    }
+
+    @Override
+    public void onItemClicked(DiscoveredPeer peer) {
+
+    }
 
     /**
      * All view related stuff
@@ -83,4 +160,6 @@ public class OnlineFragment extends Fragment {
             dialogStyle = android.R.style.Theme_Holo_Light_Panel;
         }
     }
+
+
 }
