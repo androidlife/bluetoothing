@@ -44,12 +44,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".test.MainActivity"></activity>
-        <activity android:name=".test.connect.ConnectActivity"
-            android:windowSoftInputMode="stateAlwaysHidden"/>
-        <activity android:name=".test.ChatActivity"></activity>
-        <activity android:name=".test.TestActivity"
-            android:configChanges="layoutDirection"/>
+        <activity android:name=".test.MainActivity" />
+        <activity
+            android:name=".test.connect.ConnectActivity"
+            android:windowSoftInputMode="stateAlwaysHidden" />
+        <activity android:name=".test.ChatActivity" />
+        <activity
+            android:name=".test.TestActivity"
+            android:configChanges="layoutDirection" />
+        <activity
+            android:name=".test.refactor.ui.ConnectActivity"
+            android:label="@string/title_activity_connect"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 
 </manifest>
