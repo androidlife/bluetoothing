@@ -7,7 +7,7 @@ import java.util.Collection;
 /**
  */
 
-public interface PeerDiscoveryProvider extends Provider{
+public interface PeerDiscoveryProvider{
     interface OnPeerDiscoveredListener {
         void onPeersDiscovered(Collection<DiscoveredPeer> discoveredPeers);
         void onSinglePeerDiscovered(DiscoveredPeer discoveredPeer);
