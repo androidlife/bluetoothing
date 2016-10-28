@@ -88,14 +88,14 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
     }
 
     private void stopUI() {
-        if (contactList != null) {
-            contactList.addOnScrollListener(null);
-            contactList.setAdapter(null);
-        }
         if (peerAdapter != null) {
             peerAdapter.clearAll();
             peerAdapter = null;
         }
+        if (contactList != null) {
+            contactList.setAdapter(null);
+        }
+
         if (staticPeers != null) {
             staticPeers.clear();
             staticPeers = null;

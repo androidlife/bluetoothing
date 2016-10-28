@@ -47,6 +47,7 @@ public class PeerListAdapter extends RecyclerView.Adapter<PeerListAdapter.ViewHo
     public void clearAll(){
         peerList.clear();
         setOnItemClickListener(null);
+        //notifyDataSetChanged();
     }
 
 
