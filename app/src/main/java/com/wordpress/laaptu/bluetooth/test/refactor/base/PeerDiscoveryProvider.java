@@ -14,4 +14,6 @@ public interface PeerDiscoveryProvider{
         void onPeersLost(Collection<DiscoveredPeer> lostPeers);
     }
     void setOnPeerDiscoveredListener(OnPeerDiscoveredListener listener);
+    void reload();
+    void pause();
 }
