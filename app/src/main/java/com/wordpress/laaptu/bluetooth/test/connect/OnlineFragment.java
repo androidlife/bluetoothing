@@ -179,10 +179,10 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
         };
 
         contactList.setAdapter(peerAdapter);
-        //reload of discovery provider only
+        //reloadDiscovery of discovery provider only
         if (discoveryProvider != null) {
             discoveryProvider.setOnPeerDiscoveredListener(peerListener);
-            //discoveryProvider.reload();
+            //discoveryProvider.reloadDiscovery();
         }
         referesh();
 
@@ -376,7 +376,7 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
 //            @Override
 //            public void onClick(View v) {
 //                if (discoveryProvider != null)
-//                    discoveryProvider.reload();
+//                    discoveryProvider.reloadDiscovery();
 //            }
 //        });
 

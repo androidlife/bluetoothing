@@ -17,8 +17,10 @@ import com.wordpress.laaptu.bluetooth.test.bitmaps.loaders.ImageFetcher;
 import com.wordpress.laaptu.bluetooth.test.log.Logger;
 import com.wordpress.laaptu.bluetooth.test.refactor.Extras;
 import com.wordpress.laaptu.bluetooth.test.refactor.UserPool;
+import com.wordpress.laaptu.bluetooth.test.refactor.base.SocketCommunicator;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 import timber.log.Timber;
 
@@ -27,7 +29,7 @@ import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
 /**
  */
 
-public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemClickListener {
+public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemClickListener, SocketCommunicator.View {
 
     String action = Extras.ACTION_TOUCHCHAT, username = UserPool.getDefaultUserName();
     private int dialogStyle;
@@ -39,11 +41,65 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
     private ArrayList<DiscoveredPeer> staticPeers;
 
 
+    //All Implemented interface starts here
+
+
+    /**
+     * Provider interface
+     * ...starts
+     */
+    @Override
+    public void start() {
+        startUI();
+    }
+
+    @Override
+    public void stop() {
+        stopUI();
+    }
+
+    /**
+     * PeerDiscoveryProvider.OnPeerDiscoveredListener interface
+     * ...starts
+     * will be called from PeerProvider implemented class
+     */
+    @Override
+    public void onPeersDiscovered(Collection<DiscoveredPeer> discoveredPeers) {
+
+    }
+
+    @Override
+    public void onSinglePeerDiscovered(DiscoveredPeer discoveredPeer) {
+
+    }
+
+    @Override
+    public void onPeersLost(Collection<DiscoveredPeer> lostPeers) {
+
+    }
+
+    /**
+     * ViewProvider interface
+     * ...starts
+     * will be called from ClientServer
+     */
+    @Override
+    public void connectFrom(DiscoveredPeer peer) {
+
+    }
+
+    @Override
+    public void acceptReject(boolean accept) {
+
+    }
+    //-------------------------------------------------------
+
+
     @Override
     public void onResume() {
         super.onResume();
         Timber.d("onResume()");
-        startUI();
+        start();
     }
 
     private void startUI() {
@@ -84,7 +140,7 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
     public void onPause() {
         super.onPause();
         Timber.d("onPause()");
-        stopUI();
+        stop();
     }
 
     private void stopUI() {
