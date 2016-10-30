@@ -1,6 +1,5 @@
 package com.wordpress.laaptu.bluetooth.test.refactor.bluetooth;
 
-import com.wordpress.laaptu.bluetooth.test.base.PeerDiscoveryProvider;
 import com.wordpress.laaptu.bluetooth.test.refactor.base.SocketCommunicator;
 
 /**
@@ -11,7 +10,8 @@ public class BluetoothPeerProvider implements SocketCommunicator.PeerProvider {
 
     private OnPeerDiscoveredListener onPeerDiscoveredListener;
 
-    public BluetoothPeerProvider() {
+    public BluetoothPeerProvider(OnPeerDiscoveredListener listener) {
+        this.onPeerDiscoveredListener = listener;
     }
 
     @Override
@@ -24,11 +24,6 @@ public class BluetoothPeerProvider implements SocketCommunicator.PeerProvider {
         onPeerDiscoveredListener = null;
     }
 
-    @Override
-    public void setOnPeerDiscoveredListener(OnPeerDiscoveredListener listener) {
-        this.onPeerDiscoveredListener = listener;
-
-    }
 
     @Override
     public void reloadDiscovery() {

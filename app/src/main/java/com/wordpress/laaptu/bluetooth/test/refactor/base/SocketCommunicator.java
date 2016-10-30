@@ -30,7 +30,7 @@ public class SocketCommunicator {
             void onPeersLost(Collection<DiscoveredPeer> lostPeers);
         }
 
-        void setOnPeerDiscoveredListener(PeerDiscoveryProvider.OnPeerDiscoveredListener listener);
+        //void setOnPeerDiscoveredListener(PeerDiscoveryProvider.OnPeerDiscoveredListener listener);
 
         void reloadDiscovery();
 

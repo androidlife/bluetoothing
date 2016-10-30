@@ -15,7 +15,7 @@ public class BluetoothProvider implements SocketCommunicator.SocketProvider {
     public BluetoothProvider(SocketCommunicator.View view) {
         this.view = view;
         clientServerProvider = new BluetoothClientServerProvider(this);
-        peerProvider = new BluetoothPeerProvider();
+        peerProvider = new BluetoothPeerProvider(view);
     }
 
     /**
@@ -57,10 +57,6 @@ public class BluetoothProvider implements SocketCommunicator.SocketProvider {
      * PeerProvider implementation
      * ...starts
      */
-    @Override
-    public void setOnPeerDiscoveredListener(OnPeerDiscoveredListener listener) {
-        peerProvider.setOnPeerDiscoveredListener(listener);
-    }
 
     @Override
     public void reloadDiscovery() {
