@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 
+import com.wordpress.laaptu.bluetooth.test.refactor.IntentUtils;
 import com.wordpress.laaptu.bluetooth.test.refactor.base.DiscoveredPeer;
 import com.wordpress.laaptu.bluetooth.test.refactor.base.SocketCommunicator;
 
@@ -22,8 +23,6 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
 
     private SocketCommunicator.ViewProvider viewProvider;
     //need to pass these through intent as well
-    static final String SERVER_NAME = "LiveTouchChatServer";
-    static final UUID SERVER_UUID = UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a67");
     private CreateServerAndListenForClientSocketThread serverThread;
     private ConnectToServerThread connectToServerThread;
     private SendMessageThread sendMessageThread;
@@ -45,7 +44,8 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
 
     @Override
     public void start() {
-        serverThread = new CreateServerAndListenForClientSocketThread(SERVER_NAME, SERVER_UUID);
+        serverThread = new CreateServerAndListenForClientSocketThread(IntentUtils.ServerInfo.SERVER_NAME,
+                IntentUtils.ServerInfo.SERVER_UUID);
         serverThread.start();
     }
 
@@ -69,7 +69,7 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
     public void connectTo(DiscoveredPeer peer) {
         stopConnectToServerThread();
         connectToServerThread = new ConnectToServerThread(BluetoothAdapter.getDefaultAdapter()
-                .getRemoteDevice(peer.getUniqueIdentifier()), SERVER_UUID);
+                .getRemoteDevice(peer.getUniqueIdentifier()), IntentUtils.ServerInfo.SERVER_UUID);
         connectToServerThread.start();
     }
 

@@ -3,12 +3,19 @@ package com.wordpress.laaptu.bluetooth.test.refactor;
 import android.app.Activity;
 import android.content.Intent;
 
+import java.util.UUID;
+
 /**
  */
 
 public class IntentUtils {
     private IntentUtils() {
 
+    }
+
+    public static class ServerInfo {
+        public static final String SERVER_NAME = "LiveTouchChatServer";
+        public static final UUID SERVER_UUID = UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a67");
     }
 
     public static class Extras {
