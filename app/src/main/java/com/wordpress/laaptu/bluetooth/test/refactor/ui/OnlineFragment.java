@@ -24,8 +24,6 @@ import java.util.Collection;
 
 import timber.log.Timber;
 
-import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
-
 /**
  */
 
@@ -103,14 +101,25 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
      * ...starts
      * will be called from ClientServer
      */
+    private DiscoveredPeer connectionRequestedPeer;
     @Override
     public void connectFrom(DiscoveredPeer peer) {
+        connectionRequestedPeer = peer;
+
+    }
+
+    @Override
+    public void onItemClicked(DiscoveredPeer peer) {
+        connectionRequestedPeer = peer;
+        //show dialog
 
     }
 
     @Override
     public void acceptReject(boolean accept) {
-
+        if(accept){
+            //navigate to some activity
+        }
     }
 
 
@@ -195,10 +204,7 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
         }
     }
 
-    @Override
-    public void onItemClicked(DiscoveredPeer peer) {
 
-    }
 
     /**
      * All view related stuff
