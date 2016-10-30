@@ -5,7 +5,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 
-import com.wordpress.laaptu.bluetooth.test.bluetooth.BluetoothClientServer;
 import com.wordpress.laaptu.bluetooth.test.refactor.base.DiscoveredPeer;
 import com.wordpress.laaptu.bluetooth.test.refactor.base.SocketCommunicator;
 
@@ -202,11 +201,9 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
 
     private class ConnectToServerThread extends Thread {
         private BluetoothSocket socketTobePassedToServer;
-        private final BluetoothDevice serverBluetoothDevice;
 
         public ConnectToServerThread(BluetoothDevice device, UUID serverId) {
             BluetoothSocket tmp = null;
-            serverBluetoothDevice = device;
             try {
                 tmp = device.createInsecureRfcommSocketToServiceRecord(serverId);
             } catch (Exception e) {
