@@ -1,6 +1,7 @@
 package com.wordpress.laaptu.bluetooth.test.refactor.base;
 
 import com.wordpress.laaptu.bluetooth.test.base.DiscoveredPeer;
+import com.wordpress.laaptu.bluetooth.test.refactor.base.ConnectionMonitor;
 
 import java.util.Collection;
 
@@ -37,7 +38,7 @@ public class SocketCommunicator {
         void pauseDiscovery();
     }
 
-    public interface View extends ViewProvider, PeerDiscoveryProvider.OnPeerDiscoveredListener, Provider {
+    public interface View extends ViewProvider, ConnectionMonitor.OnConnectionListener,PeerDiscoveryProvider.OnPeerDiscoveredListener, Provider {
     }
 
     public interface SocketProvider extends ViewProvider, PeerDiscoveryProvider, ClientServer, Provider {

@@ -1,6 +1,9 @@
 package com.wordpress.laaptu.bluetooth.test.refactor.bluetooth;
 
+import android.app.Activity;
+
 import com.wordpress.laaptu.bluetooth.test.base.DiscoveredPeer;
+import com.wordpress.laaptu.bluetooth.test.refactor.base.ConnectionMonitor;
 import com.wordpress.laaptu.bluetooth.test.refactor.base.SocketCommunicator;
 
 /**
@@ -11,8 +14,11 @@ public class BluetoothProvider implements SocketCommunicator.SocketProvider {
     private SocketCommunicator.View view;
     private SocketCommunicator.ClientServerProvider clientServerProvider;
     private SocketCommunicator.PeerProvider peerProvider;
+    private ConnectionMonitor connectionMonitor;
 
-    public BluetoothProvider(SocketCommunicator.View view) {
+    public BluetoothProvider(Activity activity, SocketCommunicator.View view) {
+        connectionMonitor = new BluetoothConnectionMonitor(activity, view,
+                BluetoothConnectionMonitor.LISTEN_FOR_BLUETOOTH_DEVICE);
         this.view = view;
         clientServerProvider = new BluetoothClientServerProvider(this);
         peerProvider = new BluetoothPeerProvider(view);
@@ -24,17 +30,30 @@ public class BluetoothProvider implements SocketCommunicator.SocketProvider {
      */
     @Override
     public void start() {
-        clientServerProvider.start();
-        peerProvider.start();
+        connectionMonitor.start();
+        if (clientServerProvider != null)
+            clientServerProvider.start();
+        if (peerProvider != null)
+            peerProvider.start();
     }
 
     @Override
     public void stop() {
         view = null;
-        clientServerProvider.stop();
-        peerProvider.stop();
-        clientServerProvider = null;
-        peerProvider = null;
+        if (connectionMonitor != null) {
+            connectionMonitor.stop();
+            connectionMonitor = null;
+        }
+
+        if (clientServerProvider != null) {
+            clientServerProvider.stop();
+            clientServerProvider = null;
+        }
+
+        if (peerProvider != null) {
+            peerProvider.stop();
+            peerProvider = null;
+        }
     }
 
     /**

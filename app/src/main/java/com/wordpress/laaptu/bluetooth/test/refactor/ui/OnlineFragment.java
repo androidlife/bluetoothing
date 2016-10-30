@@ -18,6 +18,7 @@ import com.wordpress.laaptu.bluetooth.test.log.Logger;
 import com.wordpress.laaptu.bluetooth.test.refactor.Extras;
 import com.wordpress.laaptu.bluetooth.test.refactor.UserPool;
 import com.wordpress.laaptu.bluetooth.test.refactor.base.SocketCommunicator;
+import com.wordpress.laaptu.bluetooth.test.refactor.bluetooth.BluetoothProvider;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,6 +40,7 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
     private ImageFetcher imageFetcher;
     private PeerListAdapter peerAdapter;
     private ArrayList<DiscoveredPeer> staticPeers;
+    private SocketCommunicator.SocketProvider socketProvider;
 
 
     //All Implemented interface starts here
@@ -51,11 +53,18 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
     @Override
     public void start() {
         startUI();
+        socketProvider = new BluetoothProvider(getActivity(), this);
+        socketProvider.start();
     }
 
     @Override
     public void stop() {
         stopUI();
+        if (socketProvider != null) {
+            socketProvider.stop();
+            socketProvider = null;
+        }
+
     }
 
     /**
@@ -92,6 +101,17 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
     public void acceptReject(boolean accept) {
 
     }
+
+
+    /**
+     * Connection Lost
+     */
+    @Override
+    public void connectionLost() {
+        stop();
+        getActivity().finish();
+    }
+
     //-------------------------------------------------------
 
 
