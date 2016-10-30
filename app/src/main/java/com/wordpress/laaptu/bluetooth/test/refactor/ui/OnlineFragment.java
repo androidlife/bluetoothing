@@ -170,19 +170,19 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
             @Override
             public void run() {
                 //if it is from client
-                if (!connectionRequestedPeer.isServer()) {
-                    //removing progress fragment
-                    Fragment prev = getFragmentManager().findFragmentByTag(FRAG_SHOW_PROGRESS);
-                    if (prev != null) {
-                        getFragmentManager().beginTransaction().remove(prev).commit();
-                    }
-                    //show user busy dialog
+                //removing progress fragment
+                Fragment prev = getFragmentManager().findFragmentByTag(FRAG_SHOW_PROGRESS);
+                if (prev != null) {
+                    getFragmentManager().beginTransaction().remove(prev).commit();
                     if (!accept) {
                         RequestDialog.getInstance(null, "User " + connectionRequestedPeer.getName() +
                                 " is currently unavailable", dialogStyle, true, null)
                                 .show(getFragmentManager(), FRAG_USER_BUSY);
                     }
                 }
+                //show user busy dialog
+
+
                 if (accept) {
                     //navigate to some activity
                     //connection accepted
