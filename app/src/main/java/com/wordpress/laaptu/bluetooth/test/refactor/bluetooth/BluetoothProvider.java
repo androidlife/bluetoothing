@@ -2,8 +2,8 @@ package com.wordpress.laaptu.bluetooth.test.refactor.bluetooth;
 
 import android.app.Activity;
 
-import com.wordpress.laaptu.bluetooth.test.base.DiscoveredPeer;
 import com.wordpress.laaptu.bluetooth.test.refactor.base.ConnectionMonitor;
+import com.wordpress.laaptu.bluetooth.test.refactor.base.DiscoveredPeer;
 import com.wordpress.laaptu.bluetooth.test.refactor.base.SocketCommunicator;
 
 import timber.log.Timber;
@@ -23,7 +23,7 @@ public class BluetoothProvider implements SocketCommunicator.SocketProvider {
         connectionMonitor = new BluetoothConnectionMonitor(activity, view,
                 BluetoothConnectionMonitor.LISTEN_FOR_BLUETOOTH_DEVICE);
         this.view = view;
-        clientServerProvider = new BluetoothClientServerProvider(this);
+        clientServerProvider = new BluetoothClientServerProvider(this,username);
         peerProvider = new BluetoothPeerProvider(activity, view);
         this.username = username;
         this.action = action;

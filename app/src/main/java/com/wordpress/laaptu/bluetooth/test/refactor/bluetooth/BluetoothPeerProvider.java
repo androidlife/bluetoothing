@@ -8,9 +8,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
-import com.wordpress.laaptu.bluetooth.test.base.DiscoveredPeer;
 import com.wordpress.laaptu.bluetooth.test.bluetooth.StoredBT;
-import com.wordpress.laaptu.bluetooth.test.log.Logger;
+import com.wordpress.laaptu.bluetooth.test.refactor.base.DiscoveredPeer;
 import com.wordpress.laaptu.bluetooth.test.refactor.base.SocketCommunicator;
 
 import java.util.ArrayList;
@@ -103,7 +102,7 @@ public class BluetoothPeerProvider implements SocketCommunicator.PeerProvider {
     @Override
     public void reloadDiscovery() {
         if (bluetoothAdapter.isDiscovering()) {
-            Logger.d("Bluetooth discovery is in progress, can't refresh");
+            Timber.d("Bluetooth discovery is in progress, can't refresh");
             return;
         }
         totalRetry = TOTAL_RETRY;

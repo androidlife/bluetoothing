@@ -1,6 +1,5 @@
 package com.wordpress.laaptu.bluetooth.test.refactor.base;
 
-import com.wordpress.laaptu.bluetooth.test.base.DiscoveredPeer;
 import com.wordpress.laaptu.bluetooth.test.refactor.base.ConnectionMonitor;
 
 import java.util.Collection;

@@ -2,8 +2,8 @@ package com.wordpress.laaptu.bluetooth.test.refactor.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
 
-import com.wordpress.laaptu.bluetooth.test.base.DiscoveredPeer;
 import com.wordpress.laaptu.bluetooth.test.bluetooth.UserPool;
+import com.wordpress.laaptu.bluetooth.test.refactor.base.DiscoveredPeer;
 
 /**
  */
@@ -12,10 +12,19 @@ public class BluetoothPeer implements DiscoveredPeer {
 
     private UserPool.User user;
     private BluetoothDevice bluetoothDevice;
+    public boolean isServer = false;
+    private String userName;
 
     public BluetoothPeer(BluetoothDevice bluetoothDevice) {
         user = UserPool.getUserByName(bluetoothDevice.getAddress());
         this.bluetoothDevice = bluetoothDevice;
+        userName = user.name;
+    }
+
+    public BluetoothPeer(BluetoothDevice bluetoothDevice, String userName, boolean isServer) {
+        this(bluetoothDevice);
+        this.userName = userName;
+        this.isServer = isServer;
     }
 
     /**
@@ -27,7 +36,7 @@ public class BluetoothPeer implements DiscoveredPeer {
     public String getName() {
         String name = bluetoothDevice.getName() == null ? "Null" : bluetoothDevice.getName();
         return name;
-        //return user.name;
+        //return userName;
     }
 
     @Override
@@ -47,6 +56,11 @@ public class BluetoothPeer implements DiscoveredPeer {
     @Override
     public String getUniqueIdentifier() {
         return bluetoothDevice.getAddress();
+    }
+
+    @Override
+    public boolean isServer() {
+        return isServer;
     }
 
     @Override
