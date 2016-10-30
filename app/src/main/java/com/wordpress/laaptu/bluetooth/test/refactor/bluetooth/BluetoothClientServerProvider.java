@@ -98,8 +98,11 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
 
     private void connectFrom(String peerName) {
         if (viewProvider != null) {
+            //this is little bit confusing
+            //though this is the request coming from another peer
+            //this is server
             DiscoveredPeer peer = new BluetoothPeer(BluetoothAdapter.getDefaultAdapter().getRemoteDevice(address),
-                    peerName, false);
+                    peerName, true);
             viewProvider.connectFrom(peer);
         }
 

@@ -1,6 +1,7 @@
 package com.wordpress.laaptu.bluetooth.test.refactor.ui;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -13,6 +14,7 @@ import android.view.ViewGroup;
 
 import com.wordpress.laaptu.bluetooth.R;
 import com.wordpress.laaptu.bluetooth.test.bitmaps.loaders.ImageFetcher;
+import com.wordpress.laaptu.bluetooth.test.refactor.ui.ConnectingProgressFragment;
 import com.wordpress.laaptu.bluetooth.test.refactor.Extras;
 import com.wordpress.laaptu.bluetooth.test.refactor.UserPool;
 import com.wordpress.laaptu.bluetooth.test.refactor.base.DiscoveredPeer;
@@ -38,6 +40,8 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
     private PeerListAdapter peerAdapter;
     private ArrayList<DiscoveredPeer> staticPeers;
     private SocketCommunicator.SocketProvider socketProvider;
+    private static final String FRAG_CONNECT_CONFIRM = "ConnectConfirmFrag",
+            FRAG_SHOW_PROGRESS = "ProgressFrag", FRAG_USER_BUSY = "UserbusyFrag";
 
 
     //All Implemented interface starts here
@@ -102,24 +106,63 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
      * will be called from ClientServer
      */
     private DiscoveredPeer connectionRequestedPeer;
+
+    //this is server
     @Override
     public void connectFrom(DiscoveredPeer peer) {
         connectionRequestedPeer = peer;
+        //show dialog
+
 
     }
 
+    //this is client
     @Override
     public void onItemClicked(DiscoveredPeer peer) {
         connectionRequestedPeer = peer;
         //show dialog
+        RequestDialog.DialogMethod dialogMethod = new RequestDialog.DialogMethod() {
+            @Override
+            public void acceptReject(boolean accept) {
+                if (accept && OnlineFragment.this.socketProvider != null) {
+                    Fragment progress = ConnectingProgressFragment.create(action,
+                            connectingBackgroundId, "Connecting", connectionRequestedPeer);
+                    getFragmentManager().beginTransaction().replace(R.id.container, progress)
+                            .addToBackStack(FRAG_SHOW_PROGRESS).commit();
+                    socketProvider.connectTo(connectionRequestedPeer);
+                }
+            }
+        };
+        String title = "Connect to Peer?";
+        String message = "Open connection to " + connectionRequestedPeer.getName() + "?";
+        RequestDialog.getInstance(title, message, dialogStyle, false, dialogMethod)
+                .show(getFragmentManager(), FRAG_CONNECT_CONFIRM);
 
     }
 
+
     @Override
-    public void acceptReject(boolean accept) {
-        if(accept){
-            //navigate to some activity
-        }
+    public void acceptReject(final boolean accept) {
+        //this should be run on ui thread
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (!connectionRequestedPeer.isServer()) {
+                    //removing progress fragment
+                    getFragmentManager().popBackStack();
+                    //show user busy dialog
+                    if (!accept) {
+                        RequestDialog.getInstance(null, "User " + connectionRequestedPeer.getName() +
+                                " is currently unavailable", dialogStyle, true, null)
+                                .show(getFragmentManager(), FRAG_USER_BUSY);
+                    }
+                }
+                if (accept) {
+                    //navigate to some activity
+                }
+            }
+        });
+
     }
 
 
@@ -203,7 +246,6 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
             imageFetcher = null;
         }
     }
-
 
 
     /**
