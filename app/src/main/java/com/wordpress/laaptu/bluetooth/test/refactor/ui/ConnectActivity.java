@@ -8,11 +8,10 @@ import android.widget.Toast;
 
 import com.wordpress.laaptu.bluetooth.R;
 import com.wordpress.laaptu.bluetooth.test.refactor.Extras;
-import com.wordpress.laaptu.bluetooth.test.refactor.base.ConnectionMonitor;
 
 import timber.log.Timber;
 
-public class ConnectActivity extends FragmentActivity implements ConnectionMonitor.OnConnectionListener {
+public class ConnectActivity extends FragmentActivity  {
 
 
     private static final String TAG = "ConnectActivity";
@@ -69,10 +68,10 @@ public class ConnectActivity extends FragmentActivity implements ConnectionMonit
         }
     }
 
-    @Override
-    public void connectionLost() {
-        finish();
-    }
+//    @Override
+//    public void connectionLost() {
+//        finish();
+//    }
 
     //Need to look upon this
     @Override
