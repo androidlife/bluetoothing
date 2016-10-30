@@ -6,6 +6,8 @@ import com.wordpress.laaptu.bluetooth.test.base.DiscoveredPeer;
 import com.wordpress.laaptu.bluetooth.test.refactor.base.ConnectionMonitor;
 import com.wordpress.laaptu.bluetooth.test.refactor.base.SocketCommunicator;
 
+import timber.log.Timber;
+
 /**
  */
 
@@ -15,13 +17,17 @@ public class BluetoothProvider implements SocketCommunicator.SocketProvider {
     private SocketCommunicator.ClientServerProvider clientServerProvider;
     private SocketCommunicator.PeerProvider peerProvider;
     private ConnectionMonitor connectionMonitor;
+    private String action, username;
 
-    public BluetoothProvider(Activity activity, SocketCommunicator.View view) {
+    public BluetoothProvider(Activity activity, SocketCommunicator.View view, String action, String username) {
         connectionMonitor = new BluetoothConnectionMonitor(activity, view,
                 BluetoothConnectionMonitor.LISTEN_FOR_BLUETOOTH_DEVICE);
         this.view = view;
         clientServerProvider = new BluetoothClientServerProvider(this);
-        peerProvider = new BluetoothPeerProvider(view);
+        peerProvider = new BluetoothPeerProvider(activity, view);
+        this.username = username;
+        this.action = action;
+        Timber.d("Username =%s and action =%s", username, action);
     }
 
     /**

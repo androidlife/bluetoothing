@@ -8,15 +8,17 @@ import android.widget.Toast;
 
 import com.wordpress.laaptu.bluetooth.R;
 import com.wordpress.laaptu.bluetooth.test.refactor.Extras;
+import com.wordpress.laaptu.bluetooth.test.refactor.base.ConnectionMonitor;
+import com.wordpress.laaptu.bluetooth.test.refactor.bluetooth.BluetoothConnectionMonitor;
 
 import timber.log.Timber;
 
-public class ConnectActivity extends FragmentActivity  {
+public class ConnectActivity extends FragmentActivity implements ConnectionMonitor.OnConnectionListener  {
 
 
     private static final String TAG = "ConnectActivity";
     private OnlineFragment fragment;
-    //private ConnectionMonitor connectionMonitor;
+    private ConnectionMonitor connectionMonitor;
 
 
     @Override
@@ -31,18 +33,18 @@ public class ConnectActivity extends FragmentActivity  {
     @Override
     protected void onPause() {
         Timber.d("onPause()");
-//        if (connectionMonitor != null) {
-//            connectionMonitor.stop();
-//            connectionMonitor = null;
-//        }
+        if (connectionMonitor != null) {
+            connectionMonitor.stop();
+            connectionMonitor = null;
+        }
         super.onPause();
     }
 
     @Override
     protected void onResume() {
         Timber.d("onResume()");
-        //connectionMonitor = new BluetoothConnectionMonitor(this, this, BluetoothConnectionMonitor.LISTEN_FOR_BLUETOOTH_DEVICE);
-        //connectionMonitor.start();
+//        connectionMonitor = new BluetoothConnectionMonitor(this, this, BluetoothConnectionMonitor.LISTEN_FOR_BLUETOOTH_DEVICE);
+//        connectionMonitor.start();
         Intent intent = getIntent();
         setThemeAsPerIntentAction(intent);
         if (fragment != null)
@@ -68,10 +70,10 @@ public class ConnectActivity extends FragmentActivity  {
         }
     }
 
-//    @Override
-//    public void connectionLost() {
-//        finish();
-//    }
+    @Override
+    public void connectionLost() {
+        finish();
+    }
 
     //Need to look upon this
     @Override

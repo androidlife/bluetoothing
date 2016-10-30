@@ -53,7 +53,7 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
     @Override
     public void start() {
         startUI();
-        socketProvider = new BluetoothProvider(getActivity(), this);
+        socketProvider = new BluetoothProvider(getActivity(), this, action, username);
         socketProvider.start();
     }
 
@@ -74,16 +74,28 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
      */
     @Override
     public void onPeersDiscovered(Collection<DiscoveredPeer> discoveredPeers) {
+        if (peerAdapter != null) {
+            for (DiscoveredPeer peer : discoveredPeers)
+                peerAdapter.addAt(0, peer);
+            peerAdapter.notifyDataSetChanged();
+        }
 
     }
 
     @Override
     public void onSinglePeerDiscovered(DiscoveredPeer discoveredPeer) {
+        if (peerAdapter != null)
+            peerAdapter.addNewPeer(discoveredPeer);
 
     }
 
     @Override
     public void onPeersLost(Collection<DiscoveredPeer> lostPeers) {
+        if (peerAdapter != null) {
+            for (DiscoveredPeer peer : lostPeers) {
+                peerAdapter.remove(peer);
+            }
+        }
 
     }
 

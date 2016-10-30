@@ -42,6 +42,7 @@ public class SocketCommunicator {
     }
 
     public interface SocketProvider extends ViewProvider, PeerDiscoveryProvider, ClientServer, Provider {
+
     }
 
     public interface PeerProvider extends PeerDiscoveryProvider, Provider {
