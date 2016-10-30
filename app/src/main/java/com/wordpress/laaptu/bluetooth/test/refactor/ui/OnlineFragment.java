@@ -12,11 +12,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.wordpress.laaptu.bluetooth.R;
-import com.wordpress.laaptu.bluetooth.test.base.DiscoveredPeer;
 import com.wordpress.laaptu.bluetooth.test.bitmaps.loaders.ImageFetcher;
-import com.wordpress.laaptu.bluetooth.test.log.Logger;
 import com.wordpress.laaptu.bluetooth.test.refactor.Extras;
 import com.wordpress.laaptu.bluetooth.test.refactor.UserPool;
+import com.wordpress.laaptu.bluetooth.test.refactor.base.DiscoveredPeer;
 import com.wordpress.laaptu.bluetooth.test.refactor.base.SocketCommunicator;
 import com.wordpress.laaptu.bluetooth.test.refactor.bluetooth.BluetoothProvider;
 

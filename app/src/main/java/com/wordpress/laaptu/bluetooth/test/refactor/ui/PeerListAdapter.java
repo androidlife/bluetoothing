@@ -9,9 +9,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.wordpress.laaptu.bluetooth.R;
-import com.wordpress.laaptu.bluetooth.test.base.DiscoveredPeer;
 import com.wordpress.laaptu.bluetooth.test.bitmaps.loaders.ImageFetcher;
 import com.wordpress.laaptu.bluetooth.test.bluetooth.UserPool;
+import com.wordpress.laaptu.bluetooth.test.refactor.base.DiscoveredPeer;
 
 import java.util.ArrayList;
 import java.util.Collection;

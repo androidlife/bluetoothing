@@ -105,7 +105,6 @@ public class BluetoothProvider implements SocketCommunicator.SocketProvider {
 
     @Override
     public void acceptReject(boolean accept) {
-
         view.acceptReject(accept);
     }
 }

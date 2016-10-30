@@ -3,7 +3,7 @@ package com.wordpress.laaptu.bluetooth.test.refactor;
 import android.content.Context;
 
 import com.wordpress.laaptu.bluetooth.R;
-import com.wordpress.laaptu.bluetooth.test.base.DiscoveredPeer;
+import com.wordpress.laaptu.bluetooth.test.refactor.base.DiscoveredPeer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -153,6 +153,11 @@ public class UserPool {
         @Override
         public String getUniqueIdentifier() {
             return null;
+        }
+
+        @Override
+        public boolean isServer() {
+            return false;
         }
     }
 }
