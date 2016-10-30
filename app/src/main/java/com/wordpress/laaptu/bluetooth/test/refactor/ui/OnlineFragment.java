@@ -1,7 +1,6 @@
 package com.wordpress.laaptu.bluetooth.test.refactor.ui;
 
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -14,8 +13,7 @@ import android.view.ViewGroup;
 
 import com.wordpress.laaptu.bluetooth.R;
 import com.wordpress.laaptu.bluetooth.test.bitmaps.loaders.ImageFetcher;
-import com.wordpress.laaptu.bluetooth.test.refactor.ui.ConnectingProgressFragment;
-import com.wordpress.laaptu.bluetooth.test.refactor.Extras;
+import com.wordpress.laaptu.bluetooth.test.refactor.IntentUtils;
 import com.wordpress.laaptu.bluetooth.test.refactor.UserPool;
 import com.wordpress.laaptu.bluetooth.test.refactor.base.DiscoveredPeer;
 import com.wordpress.laaptu.bluetooth.test.refactor.base.SocketCommunicator;
@@ -31,7 +29,7 @@ import timber.log.Timber;
 
 public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemClickListener, SocketCommunicator.View {
 
-    String action = Extras.ACTION_TOUCHCHAT, username = UserPool.getDefaultUserName();
+    String action = IntentUtils.Extras.ACTION_TOUCHCHAT, username = UserPool.getDefaultUserName();
     private int dialogStyle;
     private int connectingBackgroundId;
     private int backgroundId = -1;
@@ -41,7 +39,7 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
     private ArrayList<DiscoveredPeer> staticPeers;
     private SocketCommunicator.SocketProvider socketProvider;
     private static final String FRAG_CONNECT_CONFIRM = "ConnectConfirmFrag",
-            FRAG_SHOW_PROGRESS = "ProgressFrag", FRAG_USER_BUSY = "UserbusyFrag";
+            FRAG_SHOW_PROGRESS = "ProgressFrag", FRAG_USER_BUSY = "UserbusyFrag", FRAG_CONNECT_REQUEST = "ConnectRequest";
 
 
     //All Implemented interface starts here
@@ -112,6 +110,28 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
     public void connectFrom(DiscoveredPeer peer) {
         connectionRequestedPeer = peer;
         //show dialog
+        //this is called from somethread, so it needs
+        // to be on main thread
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                RequestDialog.DialogMethod dialogMethod = new RequestDialog.DialogMethod() {
+                    @Override
+                    public void acceptReject(boolean accept) {
+                        if (OnlineFragment.this.socketProvider != null) {
+                            socketProvider.yesNoMsg(accept);
+                            if (accept) {
+                                //TODO show ConnectingProgressFragment
+                            }
+                        }
+                    }
+                };
+                String title = "Confirm Connection";
+                String message = "Okay to connect " + connectionRequestedPeer.getName() + "?";
+                RequestDialog.getInstance(title, message, dialogStyle, false, dialogMethod)
+                        .show(getFragmentManager(), FRAG_CONNECT_REQUEST);
+            }
+        });
 
 
     }
@@ -122,6 +142,7 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
         connectionRequestedPeer = peer;
         //show dialog
         RequestDialog.DialogMethod dialogMethod = new RequestDialog.DialogMethod() {
+            //called after dialog is dismissed
             @Override
             public void acceptReject(boolean accept) {
                 if (accept && OnlineFragment.this.socketProvider != null) {
@@ -147,6 +168,7 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                //if it is from client
                 if (!connectionRequestedPeer.isServer()) {
                     //removing progress fragment
                     getFragmentManager().popBackStack();
@@ -159,6 +181,12 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
                 }
                 if (accept) {
                     //navigate to some activity
+                    //connection accepted
+                    //TODO move this to separate IntentUtils
+                    //Intent intent =new Intent
+                    String[] params = {action, IntentUtils.Extras.MEDIUM_BLUETOOTH,
+                            connectionRequestedPeer.getUniqueIdentifier(), connectionRequestedPeer.getName()};
+                    IntentUtils.navigateToChat(getActivity(), connectionRequestedPeer.isServer(), params);
                 }
             }
         });
@@ -270,29 +298,29 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
     public void passIntent(Intent intent) {
         if (intent == null)
             return;
-        String action = intent.getStringExtra(Extras.EXTRA_ACTION);
+        String action = intent.getStringExtra(IntentUtils.Extras.ACTION);
         if (TextUtils.isEmpty(action))
-            action = Extras.ACTION_TOUCHCHAT;
+            action = IntentUtils.Extras.ACTION_TOUCHCHAT;
         setThemeAsPerAction(action);
-        username = intent.getStringExtra(Extras.EXTRA_USERNAME);
+        username = intent.getStringExtra(IntentUtils.Extras.USERNAME);
     }
 
 
     private void setThemeAsPerAction(String action) {
         this.action = action;
         boolean isDark = false;
-        if (Extras.ACTION_TOUCHTRAILS.equals(action)) {
+        if (IntentUtils.Extras.ACTION_TOUCHTRAILS.equals(action)) {
             backgroundId = R.color.black;
             connectingBackgroundId = R.color.black;
             isDark = true;
-        } else if (Extras.ACTION_TOUCHVIDEO.equals(action)) {
+        } else if (IntentUtils.Extras.ACTION_TOUCHVIDEO.equals(action)) {
             backgroundId = R.drawable.bg_video_connecting;
             connectingBackgroundId = R.drawable.bg_video_connecting_progress;
-        } else if (Extras.ACTION_TOUCHDICE.equals(action)) {
+        } else if (IntentUtils.Extras.ACTION_TOUCHDICE.equals(action)) {
             backgroundId = R.drawable.bg_dice_connecting;
             connectingBackgroundId = R.drawable.bg_dice_connecting;
             isDark = true;
-        } else if (Extras.ACTION_TOUCHCHAT.equals(action)) {
+        } else if (IntentUtils.Extras.ACTION_TOUCHCHAT.equals(action)) {
             backgroundId = R.drawable.bg_chat_connecting;
             connectingBackgroundId = R.drawable.bg_chat_connecting_progress;
         }

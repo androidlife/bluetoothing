@@ -7,9 +7,8 @@ import android.support.v4.app.FragmentActivity;
 import android.widget.Toast;
 
 import com.wordpress.laaptu.bluetooth.R;
-import com.wordpress.laaptu.bluetooth.test.refactor.Extras;
+import com.wordpress.laaptu.bluetooth.test.refactor.IntentUtils;
 import com.wordpress.laaptu.bluetooth.test.refactor.base.ConnectionMonitor;
-import com.wordpress.laaptu.bluetooth.test.refactor.bluetooth.BluetoothConnectionMonitor;
 
 import timber.log.Timber;
 
@@ -58,11 +57,11 @@ public class ConnectActivity extends FragmentActivity implements ConnectionMonit
             Timber.e("Action is invalid");
         }
         int themeId = -1;
-        if (Extras.ACTION_TOUCHTRAILS.equals(action)
-                || Extras.ACTION_TOUCHDICE.equals(action)) {
+        if (IntentUtils.Extras.ACTION_TOUCHTRAILS.equals(action)
+                || IntentUtils.Extras.ACTION_TOUCHDICE.equals(action)) {
             themeId = android.R.style.Theme_Holo_NoActionBar_Fullscreen;
-        } else if (Extras.ACTION_TOUCHVIDEO.equals(action) ||
-                Extras.ACTION_TOUCHCHAT.equals(action)) {
+        } else if (IntentUtils.Extras.ACTION_TOUCHVIDEO.equals(action) ||
+                IntentUtils.Extras.ACTION_TOUCHCHAT.equals(action)) {
             themeId = android.R.style.Theme_Holo_Light_NoActionBar_Fullscreen;
         }
         if (themeId != -1) {
