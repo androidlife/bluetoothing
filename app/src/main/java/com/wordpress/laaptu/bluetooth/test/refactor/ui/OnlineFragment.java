@@ -146,10 +146,11 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
             @Override
             public void acceptReject(boolean accept) {
                 if (accept && OnlineFragment.this.socketProvider != null) {
-                    Fragment progress = ConnectingProgressFragment.create(action,
-                            connectingBackgroundId, "Connecting", connectionRequestedPeer);
-                    getFragmentManager().beginTransaction().replace(R.id.container, progress)
-                            .addToBackStack(FRAG_SHOW_PROGRESS).commit();
+                    ConnectingProgressFragment.create(action,
+                            connectingBackgroundId, "Connecting", connectionRequestedPeer.getName(),
+                            connectionRequestedPeer.getPicture())
+                            .show(getFragmentManager(), FRAG_SHOW_PROGRESS);
+
                     socketProvider.connectTo(connectionRequestedPeer);
                 }
             }
@@ -171,7 +172,10 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
                 //if it is from client
                 if (!connectionRequestedPeer.isServer()) {
                     //removing progress fragment
-                    getFragmentManager().popBackStack();
+                    Fragment prev = getFragmentManager().findFragmentByTag(FRAG_SHOW_PROGRESS);
+                    if (prev != null) {
+                        getFragmentManager().beginTransaction().remove(prev).commit();
+                    }
                     //show user busy dialog
                     if (!accept) {
                         RequestDialog.getInstance(null, "User " + connectionRequestedPeer.getName() +

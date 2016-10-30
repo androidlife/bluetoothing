@@ -82,7 +82,7 @@ public class RequestDialog extends DialogFragment {
                     acceptReject(true, dialog);
                 }
             });
-            builder.setPositiveButton("No", new DialogInterface.OnClickListener() {
+            builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
 
                 @Override
                 public void onClick(DialogInterface dialog, int which) {

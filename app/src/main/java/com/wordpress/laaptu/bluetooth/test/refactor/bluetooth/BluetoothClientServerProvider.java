@@ -39,6 +39,7 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
 
     public BluetoothClientServerProvider(SocketCommunicator.ViewProvider viewProvider, String username) {
         this.viewProvider = viewProvider;
+        Timber.d("BluetoothClientServer Provider , is viewprovider null =%b", viewProvider == null);
         this.userName = username;
     }
 
@@ -81,6 +82,7 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
     }
 
     private void acceptReject(boolean accept) {
+        Timber.d("Is connection accept =%b and is view provider null = %b", accept, viewProvider == null);
         if (viewProvider != null)
             viewProvider.acceptReject(accept);
     }
@@ -88,7 +90,7 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
     private void deliverTheSocket(BluetoothSocket bluetoothSocket, boolean isServer) {
         this.isServer = isServer;
         address = bluetoothSocket.getRemoteDevice().getAddress();
-        stopSendMessageThread();
+        //stopSendMessageThread();
         sendMessageThread = new SendMessageThread(bluetoothSocket, isServer);
         sendMessageThread.start();
         if (isServer)
@@ -214,7 +216,7 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
                         "Cannot create socket that needs to be passed to the server, going for fallback socket");
                 terminateWithErrorLog();
             }
-            if (tmp != null) Timber.d("Created socket to be passed to server without reflection");
+            if (tmp != null) Timber.d("Created socket to be passed to server");
             socketTobePassedToServer = tmp;
         }
 

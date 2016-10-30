@@ -105,6 +105,7 @@ public class BluetoothProvider implements SocketCommunicator.SocketProvider {
 
     @Override
     public void acceptReject(boolean accept) {
+        Timber.d("Is connection accepted =%b",accept);
         view.acceptReject(accept);
     }
 }

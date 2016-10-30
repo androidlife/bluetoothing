@@ -134,8 +134,8 @@ public class BluetoothPeerProvider implements SocketCommunicator.PeerProvider {
         activity.registerReceiver(bluetoothStateBR, bluetoothStateIntentFilter);
         currentDevices = new HashSet<>();
         prevDevices = new HashSet<>();
-        reloadDiscovery();
-        //workWithSavedItems();
+        //reloadDiscovery();
+        workWithSavedItems();
     }
 
     /**
