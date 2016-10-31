@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.text.TextUtils;
 
 import com.wordpress.laaptu.bluetooth.test.refactor.IntentUtils;
 import com.wordpress.laaptu.bluetooth.test.refactor.base.DiscoveredPeer;
@@ -40,7 +41,10 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
     public BluetoothClientServerProvider(SocketCommunicator.ViewProvider viewProvider, String username) {
         this.viewProvider = viewProvider;
         Timber.d("BluetoothClientServer Provider , is viewprovider null =%b", viewProvider == null);
-        this.userName = username;
+        //this null check is essential
+        // as we require to pass this username
+        // and if this is null, socket will be close
+        this.userName = TextUtils.isEmpty(username) ? "User" : username;
     }
 
     @Override

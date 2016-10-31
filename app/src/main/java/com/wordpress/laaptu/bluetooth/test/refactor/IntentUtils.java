@@ -3,6 +3,8 @@ package com.wordpress.laaptu.bluetooth.test.refactor;
 import android.app.Activity;
 import android.content.Intent;
 
+import com.wordpress.laaptu.bluetooth.test.refactor.ui.ChatActivity;
+
 import java.util.UUID;
 
 /**
@@ -51,6 +53,7 @@ public class IntentUtils {
             throw new RuntimeException("Illegal parameter passed for activity navigation");
 
         Intent intent = new Intent(Extras.ACTION_ + params[0]);
+        intent = new Intent(activity, ChatActivity.class);
         intent.putExtra(Extras.MEDIUM, params[1]);
         intent.putExtra(Extras.ADDRESS, params[2]);
         intent.putExtra(Extras.PEERNAME, params[3]);

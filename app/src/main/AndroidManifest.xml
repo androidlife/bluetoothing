@@ -48,7 +48,12 @@
         <activity
             android:name=".test.connect.ConnectActivity"
             android:windowSoftInputMode="stateAlwaysHidden" />
-        <activity android:name=".test.ChatActivity" />
+        <activity
+            android:name=".test.ChatActivity"
+            android:windowSoftInputMode="stateAlwaysHidden" />
+        <activity
+            android:name=".test.refactor.ui.ChatActivity"
+            android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
             android:name=".test.TestActivity"
             android:configChanges="layoutDirection" />
@@ -56,7 +61,7 @@
             android:name=".test.refactor.ui.ConnectActivity"
             android:label="@string/title_activity_connect"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar"/>
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>
