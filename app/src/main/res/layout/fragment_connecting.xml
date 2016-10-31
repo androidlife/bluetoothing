@@ -3,9 +3,9 @@
     android:id="@+id/conectingFragment"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="@drawable/bg_video_connecting_progress"
     android:orientation="vertical"
     android:weightSum="7">
+    <!--TODO add bg,removing it right now as it is slowing down the app-->
 
     <TextView
         android:id="@+id/connectingTitle"

@@ -62,7 +62,7 @@ public class ConnectingProgressFragment extends DialogFragment {
             //TODO resize image
             //view.setBackgroundResource(backgroundid);
         } else {
-            view.setBackgroundDrawable(null);
+            //view.setBackgroundDrawable(null);
         }
         TextView title = (TextView) view.findViewById(R.id.connectingTitle);
         if ("TouchChat".equals(action)) {
@@ -93,7 +93,8 @@ public class ConnectingProgressFragment extends DialogFragment {
         });
         ImageView peerPic = (ImageView) view.findViewById(R.id.userPic2);
         if (peerPic != null) {
-            peerPic.setImageResource(peerImage);
+            //TODO add pic
+            //peerPic.setImageResource(peerImage);
         } else {
             Log.e(TAG, "Couldn't find user pic");
         }
