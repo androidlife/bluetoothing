@@ -276,6 +276,8 @@ public interface DataConduit {
 
     }
 
+    public static final String SERVER_NAME = "LiveTouchChatServer";
+    public static final UUID SERVER_UUID = UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a67");
 
     public static class TCPBluetooth implements DataConduit {
 
@@ -290,27 +292,29 @@ public interface DataConduit {
         private ByteBuffer outSize;
         private boolean isHost;
         private BluetoothSocket socket;
-        private static final int RETRY_COUNT=5;
 
         public TCPBluetooth(String clientIp, boolean isHost) {
             this.clientIp = clientIp;
             this.isHost = isHost;
+            //socket = SocketProvider.getInstance().socket;
             inSize = ByteBuffer.allocate(4);
             outSize = ByteBuffer.allocate(4);
         }
 
-        private void createServer(int retryCount) {
+        private void createServer() {
+            int retryCount = 0;
             BluetoothServerSocket server = null;
             try {
                 server = BluetoothAdapter.getDefaultAdapter()
-                        .listenUsingInsecureRfcommWithServiceRecord(IntentUtils.ServerInfo.SERVER_NAME1,
-                                IntentUtils.ServerInfo.SERVER_UUID1);
+                        .listenUsingInsecureRfcommWithServiceRecord(IntentUtils.ServerInfo.SERVER_NAME,
+                                IntentUtils.ServerInfo.SERVER_UUID);
             } catch (Exception e) {
                 Timber.d("Unable to create a server ");
                 e.printStackTrace();
+                //BluetoothClientServer.this.sendError(BluetoothClientServer.Error.ERROR_SERVER_CREATION);
             }
 
-            while (server != null && socket == null && retryCount < RETRY_COUNT) {
+            while (server != null && socket == null && retryCount < 5) {
                 try {
                     socket = server.accept();
                 } catch (IOException e) {
@@ -328,11 +332,12 @@ public interface DataConduit {
             Log.i(TAG, "Server connection accepted");
         }
 
-        private void connectToServer(int retryCount) {
-            while (socket == null && retryCount < RETRY_COUNT) {
+        private void connectToServer() {
+            int retryCount = 0;
+            while (socket == null && retryCount < 5) {
                 try {
                     socket = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(clientIp)
-                            .createInsecureRfcommSocketToServiceRecord(IntentUtils.ServerInfo.SERVER_UUID1);
+                            .createInsecureRfcommSocketToServiceRecord(IntentUtils.ServerInfo.SERVER_UUID);
                     socket.connect();
                 } catch (Exception e) {
                     ++retryCount;
@@ -346,9 +351,9 @@ public interface DataConduit {
         @Override
         public void start() {
             if (isHost)
-                createServer(RETRY_COUNT);
+                createServer();
             else
-                connectToServer(RETRY_COUNT);
+                connectToServer();
             if (socket != null) {
                 try {
                     inputStream = socket.getInputStream();
