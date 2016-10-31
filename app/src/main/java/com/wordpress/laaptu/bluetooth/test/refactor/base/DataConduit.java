@@ -303,8 +303,8 @@ public interface DataConduit {
             BluetoothServerSocket server = null;
             try {
                 server = BluetoothAdapter.getDefaultAdapter()
-                        .listenUsingInsecureRfcommWithServiceRecord(IntentUtils.ServerInfo.SERVER_NAME,
-                                IntentUtils.ServerInfo.SERVER_UUID);
+                        .listenUsingInsecureRfcommWithServiceRecord(IntentUtils.ServerInfo.SERVER_NAME1,
+                                IntentUtils.ServerInfo.SERVER_UUID1);
             } catch (Exception e) {
                 Timber.d("Unable to create a server ");
                 e.printStackTrace();
@@ -332,7 +332,7 @@ public interface DataConduit {
             while (socket == null && retryCount < RETRY_COUNT) {
                 try {
                     socket = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(clientIp)
-                            .createInsecureRfcommSocketToServiceRecord(IntentUtils.ServerInfo.SERVER_UUID);
+                            .createInsecureRfcommSocketToServiceRecord(IntentUtils.ServerInfo.SERVER_UUID1);
                     socket.connect();
                 } catch (Exception e) {
                     ++retryCount;

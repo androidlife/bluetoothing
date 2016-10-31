@@ -112,6 +112,7 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
         //show dialog
         //this is called from somethread, so it needs
         // to be on main thread
+        //TODO remove any fragments, before being added
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {

@@ -18,6 +18,8 @@ public class IntentUtils {
     public static class ServerInfo {
         public static final String SERVER_NAME = "LiveTouchChatServer";
         public static final UUID SERVER_UUID = UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a67");
+        public static final String SERVER_NAME1 = "LiveTouchChatServer1";
+        public static final UUID SERVER_UUID1 = UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a69");
     }
 
     public static class Extras {
