@@ -52,6 +52,10 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
     @Override
     public void start() {
         startUI();
+        startProvider();
+    }
+
+    private void startProvider() {
         socketProvider = new BluetoothProvider(getActivity(), this, action, username);
         socketProvider.start();
     }
@@ -59,11 +63,15 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
     @Override
     public void stop() {
         stopUI();
+        stopProvider();
+
+    }
+
+    private void stopProvider() {
         if (socketProvider != null) {
             socketProvider.stop();
             socketProvider = null;
         }
-
     }
 
     /**
@@ -146,6 +154,8 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
     public void onItemClicked(DiscoveredPeer peer) {
         connectionRequestedPeer = peer;
         //show dialog
+        //TODO remove any dialog before adding them
+        // look for DialogFragment implementation first
         RequestDialog.DialogMethod dialogMethod = new RequestDialog.DialogMethod() {
             //called after dialog is dismissed
             @Override
@@ -197,6 +207,7 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
                     //connection accepted
                     //TODO move this to separate IntentUtils
                     //Intent intent =new Intent
+                    stopProvider();
                     String[] params = {action, IntentUtils.Extras.MEDIUM_BLUETOOTH,
                             connectionRequestedPeer.getUniqueIdentifier(), connectionRequestedPeer.getName()};
                     IntentUtils.navigateToChat(getActivity(), connectionRequestedPeer.isServer(), params);
