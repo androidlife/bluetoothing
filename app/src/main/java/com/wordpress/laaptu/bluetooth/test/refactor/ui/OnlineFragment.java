@@ -126,6 +126,10 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
                         }
                     }
                 };
+                if(true){
+                    dialogMethod.acceptReject(true);
+                    return;
+                }
                 String title = "Confirm Connection";
                 String message = "Okay to connect " + connectionRequestedPeer.getName() + "?";
                 RequestDialog.getInstance(title, message, dialogStyle, false, dialogMethod)
@@ -155,6 +159,10 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
                 }
             }
         };
+        if(true){
+            dialogMethod.acceptReject(true);
+            return;
+        }
         String title = "Connect to Peer?";
         String message = "Open connection to " + connectionRequestedPeer.getName() + "?";
         RequestDialog.getInstance(title, message, dialogStyle, false, dialogMethod)

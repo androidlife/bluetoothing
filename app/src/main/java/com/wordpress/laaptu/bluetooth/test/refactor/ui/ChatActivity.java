@@ -22,6 +22,8 @@ import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import timber.log.Timber;
+
 
 public class ChatActivity extends AppCompatActivity implements BluetoothConnectionMonitor.OnConnectionListener {
 
@@ -226,6 +228,7 @@ public class ChatActivity extends AppCompatActivity implements BluetoothConnecti
         connectionMonitor.start();
         String address = getIntent().getStringExtra(IntentUtils.Extras.ADDRESS);
         boolean isHost = getIntent().getBooleanExtra(IntentUtils.Extras.ISHOST,false);
+        Timber.d("Address = %s and isHost = %s",address,isHost);
 
 
         outgoingMessages = new LinkedBlockingQueue<String>();
