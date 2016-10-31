@@ -76,7 +76,7 @@ public class ChatActivity extends AppCompatActivity implements BluetoothConnecti
     private void sendRandomText() {
         handler.postDelayed(repeatedRunnable, 1800);
         index = index > messages.length - 1 ? 0 : index;
-        appendText("Me: ".concat(messages[index]));
+        //appendText("Me: ".concat(messages[index]));
         outgoingMessages.add(messages[index]);
         ++index;
     }
