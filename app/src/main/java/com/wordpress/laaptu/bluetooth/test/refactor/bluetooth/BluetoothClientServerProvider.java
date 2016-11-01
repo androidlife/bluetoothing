@@ -83,7 +83,6 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
                     sendError(Error.ERROR_SERVER_CREATION);
                     break;
                 case HandlerMsg.SERVER_REJECT_INCOMING_CONNECTION:
-                    Timber.d("Server reject incoming and state =%d", state);
                     //if (state == State.STATE_PROCESS)
                     acceptReject(false);
                     break;
@@ -94,7 +93,6 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
                 case HandlerMsg.CLIENT_CONNECT_TO_SERVER_ERROR:
                     sendError(Error.ERROR_CONNECT_SERVER_SOCKET);
                     stopConnectToServerThread();
-                    Timber.d("Client couldn't connect to server =%d", state);
                     //if (state == State.STATE_PROCESS)
                     acceptReject(false);
                     break;
@@ -105,7 +103,6 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
                 case HandlerMsg.SEND_MSG_IP_STREAM_ERROR:
                 case HandlerMsg.SEND_MSG_OP_STREAM_ERROR:
                     stopConnectToServerNSendMsgThread();
-                    Timber.d("Send Message thread ip op error =%d", state);
                     //if (state == State.STATE_PROCESS)
                     acceptReject(false);
                     break;
