@@ -10,4 +10,29 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.wordpress.laaptu.bluetooth.test.TestActivity">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/btn_start"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="startThread"
+            android:text="Start" />
+
+        <Button
+            android:id="@+id/btn_stop"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="stopThread"
+            android:text="Stop" />
+
+        <TextView
+            android:id="@+id/info_txt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
 </FrameLayout>

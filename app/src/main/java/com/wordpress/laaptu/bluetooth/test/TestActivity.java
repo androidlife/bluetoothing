@@ -2,11 +2,15 @@ package com.wordpress.laaptu.bluetooth.test;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothServerSocket;
+import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
@@ -14,17 +18,23 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.wordpress.laaptu.bluetooth.R;
 import com.wordpress.laaptu.bluetooth.test.bluetooth.StoredBT;
+import com.wordpress.laaptu.bluetooth.test.refactor.IntentUtils;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
 
 import timber.log.Timber;
+
+import static android.R.string.cancel;
 
 public class TestActivity extends AppCompatActivity {
 
@@ -34,8 +44,145 @@ public class TestActivity extends AppCompatActivity {
         setContentView(R.layout.activity_test);
         addFirstFragment();
         //bluetoothTest();
-        createBluetooth();
+        //createBluetooth();
+        threadTest();
+
     }
+
+    private Handler handler;
+
+    private void threadTest() {
+        textView = (TextView) findViewById(R.id.info_txt);
+        handler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                if (msg.what == 10) {
+                    printValue((Integer) msg.obj);
+                }
+            }
+        };
+    }
+
+    private class SomeThread extends HandlerThread {
+        private boolean start = true;
+        int a = 0;
+        private Handler handler;
+
+        public SomeThread(String name) {
+            super(name);
+        }
+
+        @Override
+        protected void onLooperPrepared() {
+            super.onLooperPrepared();
+
+        }
+
+
+        BluetoothServerSocket serverSocket = null;
+        public void runNow() {
+
+            try {
+                serverSocket = BluetoothAdapter.getDefaultAdapter().
+                        listenUsingInsecureRfcommWithServiceRecord(
+                        IntentUtils.ServerInfo.SERVER_NAME, IntentUtils.ServerInfo.SERVER_UUID);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            BluetoothSocket socket = null;
+            while (start) {
+                try {
+                    Timber.d("Server created succssfully");
+                    socket = serverSocket.accept();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                Timber.d("Listening for accept() = %d", ++a);
+
+//                for (int i = 0; i < 10; ++i)
+//                    ++a;
+//                Timber.d("The value of a = %d", a);
+//                if (a > 100) {
+//                    cancel();
+//                    //TestActivity.this.printValue(a);
+//                    Message message = Message.obtain();
+//                    message.what =10;
+//                    message.obj =a;
+//                    handler.sendMessage(message);
+//                }
+
+            }
+        }
+
+        public void cancel() {
+            Timber.d("Cancel is called");
+            start = false;
+            try {
+                serverSocket.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            Timber.d("Server socket closed");
+        }
+        public void cancelNow(){
+            Timber.d("Cancel now is called");
+            //handler.dis
+          handler.sendEmptyMessage(10);
+            //handler.sendEmptyMessage(10);
+        }
+        public void startNow(){
+            start();
+            handler =new Handler(this.getLooper()){
+                @Override
+                public void handleMessage(Message msg) {
+                    super.handleMessage(msg);
+                    if(msg.what== 11){
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                runNow();
+                            }
+                        });
+                        return;
+                    }
+                    if(msg.what == 10){
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Timber.d("Msg what cancel received");
+                                cancel();
+                            }
+                        });
+
+                    }
+                }
+            };
+            handler.sendEmptyMessage(11);
+        }
+    }
+
+    private SomeThread someThread;
+    private TextView textView;
+
+    public void startThread(View view) {
+        someThread = new SomeThread("Hello");
+        someThread.startNow();
+    }
+
+    public void printValue(int val) {
+        textView.setText(String.valueOf(val));
+        stopThread(null);
+    }
+
+    public void stopThread(View view) {
+        if (someThread != null) {
+            someThread.cancelNow();
+            someThread = null;
+        }
+    }
+
 
     private BluetoothAdapter bluetoothAdapter;
 
@@ -95,7 +242,7 @@ public class TestActivity extends AppCompatActivity {
         Timber.d("ON RESUME");
         foundAction = new IntentFilter();
         foundAction.addAction(BluetoothDevice.ACTION_FOUND);
-        registerReceiver(receiver, foundAction);
+        //registerReceiver(receiver, foundAction);
         //bluetoothTest();
     }
 
