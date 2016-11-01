@@ -204,7 +204,7 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
          * and in that case if there is connection request
          * to server, cancel that as well*/
         Timber.d("Dialog cancellation normal =%b for dialogtype =%s", normalDismiss, dialogType);
-        if (dialogType.equals(FRAG_SHOW_PROGRESS) && !normalDismiss && socketProvider != null) {
+        if (dialogType!=null && dialogType.equals(FRAG_SHOW_PROGRESS) && !normalDismiss && socketProvider != null) {
             socketProvider.cancelClientConnectionRequest();
         }
         setDialogType(null);
