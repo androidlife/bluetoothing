@@ -14,11 +14,11 @@ import android.text.TextUtils;
  */
 
 public class RequestDialog extends DialogFragment {
-    interface DialogMethodInterface extends Parcelable {
+    public interface DialogMethodInterface extends Parcelable {
         void acceptReject(boolean accept);
     }
 
-    static class DialogMethod implements DialogMethodInterface {
+    public static class DialogMethod implements DialogMethodInterface {
         @Override
         public void acceptReject(boolean accept) {
         }
@@ -101,8 +101,10 @@ public class RequestDialog extends DialogFragment {
             @Override
             public void run() {
                 dialog.dismiss();
-                if (dialogMethod != null)
+                if (dialogMethod != null) {
                     dialogMethod.acceptReject(accept);
+                    dialogMethod = null;
+                }
             }
         });
     }

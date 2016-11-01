@@ -1,12 +1,12 @@
 package com.wordpress.laaptu.bluetooth.test.refactor.ui;
 
-import android.app.Dialog;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +16,8 @@ import android.widget.TextView;
 
 import com.wordpress.laaptu.bluetooth.R;
 
+import timber.log.Timber;
+
 
 public class ConnectingProgressFragment extends DialogFragment {
 
@@ -24,12 +26,16 @@ public class ConnectingProgressFragment extends DialogFragment {
     private int backgroundid;
     private int peerImage;
     private String peerName;
-    private static final String ACTION = "action", BG_ID = "backgroundId", MSG = "message", PEER_NAME = "peerName", PEER_IMAGE = "peerImage";
+    private RequestDialog.DialogMethod dialogMethod;
+    private static final String ACTION = "action",
+            BG_ID = "backgroundId", MSG = "message", PEER_NAME = "peerName",
+            PEER_IMAGE = "peerImage", DIALOG_METHOD = "dialogMethod";
+    private boolean normalDismiss = true;
 
 
     public static DialogFragment create(final String action, final int backgroundid,
                                         final String message,
-                                        final String peerName, int peerImage) {
+                                        final String peerName, int peerImage, RequestDialog.DialogMethod dialogMethod) {
         ConnectingProgressFragment fragment = new ConnectingProgressFragment();
         Bundle params = new Bundle();
         params.putString(ACTION, action);
@@ -37,6 +43,7 @@ public class ConnectingProgressFragment extends DialogFragment {
         params.putString(MSG, message);
         params.putString(PEER_NAME, peerName);
         params.putInt(PEER_IMAGE, peerImage);
+        params.putParcelable(DIALOG_METHOD, dialogMethod);
         fragment.setArguments(params);
         return fragment;
     }
@@ -49,10 +56,30 @@ public class ConnectingProgressFragment extends DialogFragment {
         setStyle(DialogFragment.STYLE_NO_FRAME, style);
     }
 
-    @NonNull
     @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        return super.onCreateDialog(savedInstanceState);
+    public void dismiss() {
+        super.dismiss();
+        if (dialogMethod != null) {
+            dialogMethod.acceptReject(normalDismiss);
+            dialogMethod = null;
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getDialog().setOnKeyListener(new DialogInterface.OnKeyListener() {
+            @Override
+            public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                Timber.d("On back bressed =%b", keyCode == KeyEvent.KEYCODE_BACK);
+                if (keyCode == KeyEvent.KEYCODE_BACK && dialogMethod != null) {
+                    normalDismiss = false;
+                    dismiss();
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
     @Override
@@ -63,6 +90,7 @@ public class ConnectingProgressFragment extends DialogFragment {
         backgroundid = params.getInt(BG_ID);
         peerImage = params.getInt(PEER_IMAGE);
         peerName = params.getString(PEER_NAME);
+        dialogMethod = params.getParcelable(DIALOG_METHOD);
 
 
         View view = inflater.inflate(R.layout.fragment_connecting, null);
@@ -94,9 +122,9 @@ public class ConnectingProgressFragment extends DialogFragment {
 
             @Override
             public void onClick(View v) {
-                //TODO: pass the info about cancellation
-                //getFragmentManager().popBackStack();
+                normalDismiss = false;
                 dismiss();
+
             }
         });
         ImageView peerPic = (ImageView) view.findViewById(R.id.userPic2);
@@ -113,10 +141,9 @@ public class ConnectingProgressFragment extends DialogFragment {
         ProgressBar progress = (ProgressBar) view.findViewById(R.id.progressBar1);
         progress.animate();
 
+
         return view;
     }
-
-
 
 
 }

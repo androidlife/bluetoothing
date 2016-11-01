@@ -160,11 +160,7 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
             public void acceptReject(boolean accept) {
                 resetDialogType(true);
                 if (accept && OnlineFragment.this.socketProvider != null) {
-                    ConnectingProgressFragment.create(action,
-                            connectingBackgroundId, "Connecting", connectionRequestedPeer.getName(),
-                            connectionRequestedPeer.getPicture())
-                            .show(getFragmentManager(), FRAG_SHOW_PROGRESS);
-                    setDialogType(FRAG_SHOW_PROGRESS);
+                    showConnectingProgress();
                     socketProvider.connectTo(connectionRequestedPeer);
                 }
             }
@@ -181,6 +177,21 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
 
     }
 
+    private void showConnectingProgress() {
+        RequestDialog.DialogMethod dialogMethod = new RequestDialog.DialogMethod() {
+            @Override
+            public void acceptReject(boolean accept) {
+                resetDialogType(accept);
+            }
+        };
+        ConnectingProgressFragment.create(action,
+                connectingBackgroundId, "Connecting", connectionRequestedPeer.getName(),
+                connectionRequestedPeer.getPicture(), dialogMethod)
+                .show(getFragmentManager(), FRAG_SHOW_PROGRESS);
+        setDialogType(FRAG_SHOW_PROGRESS);
+    }
+
+
     private void setDialogType(String dialogType) {
         this.dialogType = dialogType;
     }
@@ -191,11 +202,13 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
          * dialog by backpress or by stopping
          * and in that case if there is connection request
          * to server, cancel that as well*/
+        Timber.d("Dialog cancellation normal =%b for dialogtype =%s",normalDismiss,dialogType);
         if (dialogType.equals(FRAG_SHOW_PROGRESS) && !normalDismiss && socketProvider != null) {
             socketProvider.cancelClientConnectionRequest();
         }
         setDialogType(null);
     }
+
 
 
     @Override
