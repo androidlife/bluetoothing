@@ -126,7 +126,7 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
         RequestDialog.DialogMethod dialogMethod = new RequestDialog.DialogMethod() {
             @Override
             public void acceptReject(boolean accept) {
-                setDialogType(null);
+                resetDialogType(true);
                 if (OnlineFragment.this.socketProvider != null) {
                     socketProvider.yesNoMsg(accept);
                     if (accept) {
@@ -151,26 +151,29 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
     @Override
     public void onItemClicked(DiscoveredPeer peer) {
         connectionRequestedPeer = peer;
+
         //show dialog
         //TODO remove any dialog before adding them
         // look for DialogFragment implementation first
-        RequestDialog.DialogMethod dialogMethod = new RequestDialog.DialogMethod() {
-            //called after dialog is dismissed
-            @Override
-            public void acceptReject(boolean accept) {
-                setDialogType(null);
-                if (accept && OnlineFragment.this.socketProvider != null) {
-                    ConnectingProgressFragment.create(action,
-                            connectingBackgroundId, "Connecting", connectionRequestedPeer.getName(),
-                            connectionRequestedPeer.getPicture())
-                            .show(getFragmentManager(), FRAG_SHOW_PROGRESS);
-                    setDialogType(FRAG_SHOW_PROGRESS);
-                    socketProvider.connectTo(connectionRequestedPeer);
-                }
-            }
-        };
-        if (test) {
-            dialogMethod.acceptReject(true);
+//        RequestDialog.DialogMethod dialogMethod = new RequestDialog.DialogMethod() {
+//            //called after dialog is dismissed
+//            @Override
+//            public void acceptReject(boolean accept) {
+//                resetDialogType(true);
+//                if (accept && OnlineFragment.this.socketProvider != null) {
+//                    ConnectingProgressFragment.create(action,
+//                            connectingBackgroundId, "Connecting", connectionRequestedPeer.getName(),
+//                            connectionRequestedPeer.getPicture())
+//                            .show(getFragmentManager(), FRAG_SHOW_PROGRESS);
+//                    setDialogType(FRAG_SHOW_PROGRESS);
+//                    socketProvider.connectTo(connectionRequestedPeer);
+//                }
+//            }
+//        };
+        RequestDialog.DialogMethod dialogMethod =null;
+        if (true) {
+            //dialogMethod.acceptReject(true);
+            showProgressDialog();
             return;
         }
         String title = "Connect to Peer?";
@@ -179,6 +182,21 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
                 .show(getFragmentManager(), FRAG_CONNECT_CONFIRM);
         setDialogType(FRAG_CONNECT_CONFIRM);
 
+    }
+
+    private void showProgressDialog() {
+        RequestDialog.DialogMethod dialogMethod = new RequestDialog.DialogMethod() {
+            @Override
+            public void acceptReject(boolean accept) {
+                super.acceptReject(accept);
+                Timber.d("Progress dismiss normal =%b", accept);
+            }
+        };
+        ConnectingProgressFragment.create(action,
+                connectingBackgroundId, "Connecting", connectionRequestedPeer.getName(),
+                connectionRequestedPeer.getPicture(), dialogMethod)
+                .show(getFragmentManager(), FRAG_SHOW_PROGRESS);
+        setDialogType(FRAG_SHOW_PROGRESS);
     }
 
     private void setDialogType(String dialogType) {
@@ -192,7 +210,7 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
          * and in that case if there is connection request
          * to server, cancel that as well*/
         if (dialogType.equals(FRAG_SHOW_PROGRESS) && !normalDismiss && socketProvider != null) {
-            socketProvider.cancelClientConnectionRequest();
+            //socketProvider.cancelClientConnectionRequest();
         }
         setDialogType(null);
     }
@@ -207,7 +225,7 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
         Fragment prev = getFragmentManager().findFragmentByTag(FRAG_SHOW_PROGRESS);
         if (prev != null) {
             getFragmentManager().beginTransaction().remove(prev).commit();
-            setDialogType(null);
+            resetDialogType(true);
             if (!accept) {
                 RequestDialog.getInstance(null, "User " + connectionRequestedPeer.getName() +
                         " is currently unavailable", dialogStyle, true, null)
