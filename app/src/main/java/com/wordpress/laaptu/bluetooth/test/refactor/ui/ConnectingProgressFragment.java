@@ -1,10 +1,14 @@
 package com.wordpress.laaptu.bluetooth.test.refactor.ui;
 
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -14,6 +18,8 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 import com.wordpress.laaptu.bluetooth.R;
 
 import timber.log.Timber;
@@ -31,6 +37,9 @@ public class ConnectingProgressFragment extends DialogFragment {
             BG_ID = "backgroundId", MSG = "message", PEER_NAME = "peerName",
             PEER_IMAGE = "peerImage", DIALOG_METHOD = "dialogMethod";
     private boolean normalDismiss = true;
+    private Picasso picasso;
+    private int imageSize;
+    private View view;
 
 
     public static DialogFragment create(final String action, final int backgroundid,
@@ -63,6 +72,7 @@ public class ConnectingProgressFragment extends DialogFragment {
             dialogMethod.acceptReject(normalDismiss);
             dialogMethod = null;
         }
+        picasso.cancelRequest(backgroundTarget);
     }
 
     @Override
@@ -82,9 +92,33 @@ public class ConnectingProgressFragment extends DialogFragment {
         });
     }
 
+    private Target backgroundTarget = new Target() {
+        @Override
+        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+            if(view !=null){
+                view.setBackground(new BitmapDrawable(getResources(),bitmap));
+            }
+
+        }
+
+        @Override
+        public void onBitmapFailed(Drawable errorDrawable) {
+            if(view !=null)
+                view.setBackground(null);
+
+        }
+
+        @Override
+        public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+        }
+    };
+
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
+        picasso = Picasso.with(getActivity());
+        imageSize = getResources().getDimensionPixelSize(R.dimen.connect_me_size);
         Bundle params = getArguments();
         action = params.getString(ACTION);
         backgroundid = params.getInt(BG_ID);
@@ -93,12 +127,13 @@ public class ConnectingProgressFragment extends DialogFragment {
         dialogMethod = params.getParcelable(DIALOG_METHOD);
 
 
-        View view = inflater.inflate(R.layout.fragment_connecting, null);
+        view = inflater.inflate(R.layout.fragment_connecting, null);
         if (backgroundid != -1) {
             //TODO resize image
             //view.setBackgroundResource(backgroundid);
+            picasso.load(backgroundid).resize(600, 600).into(backgroundTarget);
         } else {
-            //view.setBackgroundDrawable(null);
+            view.setBackground(null);
         }
         TextView title = (TextView) view.findViewById(R.id.connectingTitle);
         if ("TouchChat".equals(action)) {
@@ -129,10 +164,7 @@ public class ConnectingProgressFragment extends DialogFragment {
         });
         ImageView peerPic = (ImageView) view.findViewById(R.id.userPic2);
         if (peerPic != null) {
-            //TODO add pic
-            //peerPic.setImageResource(peerImage);
-        } else {
-            Log.e(TAG, "Couldn't find user pic");
+            picasso.load(peerImage).resize(imageSize, imageSize).into(peerPic);
         }
 
         TextView peerNameTxt = (TextView) view.findViewById(R.id.userNameView2);

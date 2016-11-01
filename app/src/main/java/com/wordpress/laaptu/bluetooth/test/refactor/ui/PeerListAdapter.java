@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
 import com.wordpress.laaptu.bluetooth.R;
 import com.wordpress.laaptu.bluetooth.test.bitmaps.loaders.ImageFetcher;
 import com.wordpress.laaptu.bluetooth.test.bluetooth.UserPool;
@@ -23,15 +24,19 @@ import timber.log.Timber;
 public class PeerListAdapter extends RecyclerView.Adapter<PeerListAdapter.ViewHolder> {
     private LayoutInflater layoutInflater;
     private ArrayList<DiscoveredPeer> peerList;
-    private ImageFetcher imageFetcher;
+    //private ImageFetcher imageFetcher;
     private RecyclerView recyclerView;
     private OnItemClickListener itemClickListener;
+    private Picasso picasso;
+    int imageSize = 0;
 
-    public PeerListAdapter(Activity activity, RecyclerView recyclerView, ImageFetcher imageFetcher) {
+    public PeerListAdapter(Activity activity, RecyclerView recyclerView) {
         layoutInflater = LayoutInflater.from(activity);
         peerList = new ArrayList<>();
-        this.imageFetcher = imageFetcher;
+        //this.imageFetcher = imageFetcher;
         this.recyclerView = recyclerView;
+        picasso = Picasso.with(activity);
+        imageSize = activity.getResources().getDimensionPixelSize(R.dimen.contact_pic_size);
     }
 
 
@@ -44,7 +49,7 @@ public class PeerListAdapter extends RecyclerView.Adapter<PeerListAdapter.ViewHo
         peerList.clear();
     }
 
-    public void clearAll(){
+    public void clearAll() {
         peerList.clear();
         setOnItemClickListener(null);
         //notifyDataSetChanged();
@@ -58,7 +63,7 @@ public class PeerListAdapter extends RecyclerView.Adapter<PeerListAdapter.ViewHo
 
     public void remove(DiscoveredPeer object) {
         boolean removed = peerList.remove(object);
-        Timber.d("Peer removed = %s and success =%b",object.getUniqueIdentifier(),removed);
+        Timber.d("Peer removed = %s and success =%b", object.getUniqueIdentifier(), removed);
     }
 
     public synchronized void addAt(int index, DiscoveredPeer peer) {
@@ -104,7 +109,8 @@ public class PeerListAdapter extends RecyclerView.Adapter<PeerListAdapter.ViewHo
     public void onBindViewHolder(ViewHolder holder, int position) {
         final DiscoveredPeer peer = getItem(position);
         if (peer != null) {
-            imageFetcher.loadImage(peer.getPicture(), holder.contact);
+            //imageFetcher.loadImage(peer.getPicture(), holder.contact);
+            picasso.load(peer.getPicture()).resize(imageSize, imageSize).into(holder.contact);
             holder.name.setText(peer.getName());
             String statusText = peer.getStatus();
             if (statusText.startsWith("Off")) {

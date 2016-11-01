@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.squareup.picasso.Picasso;
 import com.wordpress.laaptu.bluetooth.R;
 import com.wordpress.laaptu.bluetooth.test.bitmaps.loaders.ImageFetcher;
 import com.wordpress.laaptu.bluetooth.test.refactor.IntentUtils;
@@ -34,7 +35,7 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
     private int connectingBackgroundId;
     private int backgroundId = -1;
     private RecyclerView contactList;
-    private ImageFetcher imageFetcher;
+    //private ImageFetcher imageFetcher;
     private PeerListAdapter peerAdapter;
     private ArrayList<DiscoveredPeer> staticPeers;
     private SocketCommunicator.SocketProvider socketProvider;
@@ -202,13 +203,12 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
          * dialog by backpress or by stopping
          * and in that case if there is connection request
          * to server, cancel that as well*/
-        Timber.d("Dialog cancellation normal =%b for dialogtype =%s",normalDismiss,dialogType);
+        Timber.d("Dialog cancellation normal =%b for dialogtype =%s", normalDismiss, dialogType);
         if (dialogType.equals(FRAG_SHOW_PROGRESS) && !normalDismiss && socketProvider != null) {
             socketProvider.cancelClientConnectionRequest();
         }
         setDialogType(null);
     }
-
 
 
     @Override
@@ -266,17 +266,21 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
     }
 
     private void startUI() {
-        imageFetcher = new ImageFetcher(getActivity(), getResources().getDimensionPixelSize(R.dimen.contact_pic_size));
+        //imageFetcher = new ImageFetcher(getActivity(), getResources().getDimensionPixelSize(R.dimen.contact_pic_size));
+        Picasso.with(getActivity()).resumeTag(getActivity());
         contactList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
-                if (imageFetcher == null)
-                    return;
-                if (newState == RecyclerView.SCROLL_STATE_IDLE)
-                    imageFetcher.setPauseWork(false);
-                else
-                    imageFetcher.setPauseWork(true);
+//                if (imageFetcher == null)
+//                    return;
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    //imageFetcher.setPauseWork(false);
+                    Picasso.with(getActivity()).resumeTag(getActivity());
+                } else {
+                    //imageFetcher.setPauseWork(true);
+                    Picasso.with(getActivity()).pauseTag(getActivity());
+                }
             }
 
             @Override
@@ -285,7 +289,7 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
             }
         });
 
-        peerAdapter = new PeerListAdapter(getActivity(), contactList, imageFetcher);
+        peerAdapter = new PeerListAdapter(getActivity(), contactList);
         UserPool.setContext(getActivity());
         staticPeers = new ArrayList<>();
         staticPeers.add(new UserPool.StaticPeer(UserPool.getBusyUser(), "Busy", 3));
@@ -304,6 +308,7 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
         super.onPause();
         Timber.d("onPause()");
         stop();
+
     }
 
     private void stopUI() {
@@ -319,12 +324,13 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
             staticPeers.clear();
             staticPeers = null;
         }
+        Picasso.with(getActivity()).pauseTag(getActivity());
 
-        if (imageFetcher != null) {
-            imageFetcher.setExitTasksEarly(true);
-            imageFetcher.clearCache();
-            imageFetcher = null;
-        }
+//        if (imageFetcher != null) {
+//            imageFetcher.setExitTasksEarly(true);
+//            imageFetcher.clearCache();
+//            imageFetcher = null;
+//        }
     }
 
 
