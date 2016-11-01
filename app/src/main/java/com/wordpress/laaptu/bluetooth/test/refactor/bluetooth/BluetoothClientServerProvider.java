@@ -42,6 +42,26 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
         static final int ERROR_SERVER_CREATION = 0x1, ERROR_CONNECT_SERVER_SOCKET = 0x2;
     }
 
+    /**
+     * This is done to know the state of this class
+     * right now only two states
+     * STATE_PROCESS, all the tasks, before accept reject call
+     * STATE_ACCEPT_REJECT, accept,reject called from sendMessageThread
+     * This is done as when accept/reject is called we need
+     * to cancel some threads
+     * reject: Send Msg Thread and ConnectToServer Thread
+     * accept: Send Msg Thread + ConnectToServer Thread+ Server Thread
+     * While cancel, we need to close the sockets and it throws
+     * error and this error has callback. So during ACCEPT_REJECT state
+     * we don't need to give callback
+     */
+    public static class State {
+        static final int STATE_PROCESS = 0x1, STATE_ACCEPT_REJECT_MAIN = 0x2;
+    }
+
+    private int state = State.STATE_PROCESS;
+
+
     public static class HandlerMsg {
         static final int SERVER_CREATION_ERROR = 0x1;
         static final int SERVER_REJECT_INCOMING_CONNECTION = 0x2;
@@ -66,7 +86,8 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
                     sendError(Error.ERROR_SERVER_CREATION);
                     break;
                 case HandlerMsg.SERVER_REJECT_INCOMING_CONNECTION:
-                    acceptReject(false);
+                    if (state == State.STATE_PROCESS)
+                        acceptReject(false);
                     break;
                 case HandlerMsg.SERVER_ACCEPT_INCOMING_CONNECTION:
                     deliverTheSocket((BluetoothSocket) msg.obj, true);
@@ -75,7 +96,8 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
                 case HandlerMsg.CLIENT_CONNECT_TO_SERVER_ERROR:
                     sendError(Error.ERROR_CONNECT_SERVER_SOCKET);
                     stopConnectToServerThread();
-                    acceptReject(false);
+                    if (state == State.STATE_PROCESS)
+                        acceptReject(false);
                     break;
                 case HandlerMsg.CLIENT_CONNECT_TO_SERVER_SUCCESS:
                     deliverTheSocket((BluetoothSocket) msg.obj, false);
@@ -84,14 +106,17 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
                 case HandlerMsg.SEND_MSG_IP_STREAM_ERROR:
                 case HandlerMsg.SEND_MSG_OP_STREAM_ERROR:
                     stopConnectToServerNSendMsgThread();
-                    acceptReject(false);
+                    if (state == State.STATE_PROCESS)
+                        acceptReject(false);
                     break;
                 case HandlerMsg.CLIENT_UNAME_RECEIVED:
                     connectFrom((String) msg.obj);
                     break;
                 case HandlerMsg.SEND_MSG_ACCEPT_REJECT_STATUS:
+                    state = State.STATE_ACCEPT_REJECT_MAIN;
                     stopConnectToServerNSendMsgThread();
                     acceptReject((Boolean) msg.obj);
+                    state = State.STATE_PROCESS;
                     break;
             }
 

@@ -60,7 +60,7 @@ public class HomeActivity extends AppCompatActivity {
   }
 
   private void goToMainActivity() {
-    startActivity(new Intent(this, TestActivity.class));
+    startActivity(new Intent(this, com.wordpress.laaptu.bluetooth.test.refactor.ui.ConnectActivity.class));
     this.finish();
   }
 
