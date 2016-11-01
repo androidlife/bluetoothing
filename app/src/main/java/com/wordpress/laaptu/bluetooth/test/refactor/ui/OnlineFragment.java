@@ -40,7 +40,7 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
     private SocketCommunicator.SocketProvider socketProvider;
     private static final String FRAG_CONNECT_CONFIRM = "ConnectConfirmFrag",
             FRAG_SHOW_PROGRESS = "ProgressFrag", FRAG_USER_BUSY = "UserbusyFrag", FRAG_CONNECT_REQUEST = "ConnectRequest";
-
+    private boolean test = false;
 
     //All Implemented interface starts here
 
@@ -121,33 +121,29 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
         //this is called from somethread, so it needs
         // to be on main thread
         //TODO remove any fragments, before being added
-        getActivity().runOnUiThread(new Runnable() {
+        RequestDialog.DialogMethod dialogMethod = new RequestDialog.DialogMethod() {
             @Override
-            public void run() {
-                RequestDialog.DialogMethod dialogMethod = new RequestDialog.DialogMethod() {
-                    @Override
-                    public void acceptReject(boolean accept) {
-                        if (OnlineFragment.this.socketProvider != null) {
-                            socketProvider.yesNoMsg(accept);
-                            if (accept) {
-                                //TODO show ConnectingProgressFragment
-                            }
-                        }
+            public void acceptReject(boolean accept) {
+                if (OnlineFragment.this.socketProvider != null) {
+                    socketProvider.yesNoMsg(accept);
+                    if (accept) {
+                        //TODO show ConnectingProgressFragment
                     }
-                };
-                if(true){
-                    dialogMethod.acceptReject(true);
-                    return;
                 }
-                String title = "Confirm Connection";
-                String message = "Okay to connect " + connectionRequestedPeer.getName() + "?";
-                RequestDialog.getInstance(title, message, dialogStyle, false, dialogMethod)
-                        .show(getFragmentManager(), FRAG_CONNECT_REQUEST);
             }
-        });
-
-
+        };
+        if (test) {
+            dialogMethod.acceptReject(true);
+            return;
+        }
+        String title = "Confirm Connection";
+        String message = "Okay to connect " + connectionRequestedPeer.getName() + "?";
+        RequestDialog.getInstance(title, message, dialogStyle, false, dialogMethod)
+                .show(getFragmentManager(), FRAG_CONNECT_REQUEST);
     }
+
+
+
 
     //this is client
     @Override
@@ -170,7 +166,7 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
                 }
             }
         };
-        if(true){
+        if (test) {
             dialogMethod.acceptReject(true);
             return;
         }
@@ -185,35 +181,32 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
     @Override
     public void acceptReject(final boolean accept) {
         //this should be run on ui thread
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                //if it is from client
-                //removing progress fragment
-                Fragment prev = getFragmentManager().findFragmentByTag(FRAG_SHOW_PROGRESS);
-                if (prev != null) {
-                    getFragmentManager().beginTransaction().remove(prev).commit();
-                    if (!accept) {
-                        RequestDialog.getInstance(null, "User " + connectionRequestedPeer.getName() +
-                                " is currently unavailable", dialogStyle, true, null)
-                                .show(getFragmentManager(), FRAG_USER_BUSY);
-                    }
-                }
-                //show user busy dialog
 
-
-                if (accept) {
-                    //navigate to some activity
-                    //connection accepted
-                    //TODO move this to separate IntentUtils
-                    //Intent intent =new Intent
-                    stopProvider();
-                    String[] params = {action, IntentUtils.Extras.MEDIUM_BLUETOOTH,
-                            connectionRequestedPeer.getUniqueIdentifier(), connectionRequestedPeer.getName()};
-                    IntentUtils.navigateToChat(getActivity(), connectionRequestedPeer.isServer(), params);
-                }
+        //if it is from client
+        //removing progress fragment
+        Fragment prev = getFragmentManager().findFragmentByTag(FRAG_SHOW_PROGRESS);
+        if (prev != null) {
+            getFragmentManager().beginTransaction().remove(prev).commit();
+            if (!accept) {
+                RequestDialog.getInstance(null, "User " + connectionRequestedPeer.getName() +
+                        " is currently unavailable", dialogStyle, true, null)
+                        .show(getFragmentManager(), FRAG_USER_BUSY);
             }
-        });
+        }
+        //show user busy dialog
+
+
+        if (accept) {
+            //navigate to some activity
+            //connection accepted
+            //TODO move this to separate IntentUtils
+            //Intent intent =new Intent
+            stopProvider();
+            String[] params = {action, IntentUtils.Extras.MEDIUM_BLUETOOTH,
+                    connectionRequestedPeer.getUniqueIdentifier(), connectionRequestedPeer.getName()};
+            IntentUtils.navigateToChat(getActivity(), connectionRequestedPeer.isServer(), params);
+        }
+
 
     }
 

@@ -15,12 +15,9 @@ import com.wordpress.laaptu.bluetooth.test.refactor.base.SocketCommunicator;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Socket;
 import java.util.UUID;
 
 import timber.log.Timber;
-
-import static android.R.attr.x;
 
 /**
  */
@@ -55,11 +52,11 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
      * error and this error has callback. So during ACCEPT_REJECT state
      * we don't need to give callback
      */
-    public static class State {
-        static final int STATE_PROCESS = 0x1, STATE_ACCEPT_REJECT_MAIN = 0x2;
-    }
+//    public static class State {
+//        static final int STATE_PROCESS = 0x1, STATE_ACCEPT_REJECT_MAIN = 0x2;
+//    }
 
-    private int state = State.STATE_PROCESS;
+    //private int state = State.STATE_PROCESS;
 
 
     public static class HandlerMsg {
@@ -86,8 +83,9 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
                     sendError(Error.ERROR_SERVER_CREATION);
                     break;
                 case HandlerMsg.SERVER_REJECT_INCOMING_CONNECTION:
-                    if (state == State.STATE_PROCESS)
-                        acceptReject(false);
+                    Timber.d("Server reject incoming and state =%d", state);
+                    //if (state == State.STATE_PROCESS)
+                    acceptReject(false);
                     break;
                 case HandlerMsg.SERVER_ACCEPT_INCOMING_CONNECTION:
                     deliverTheSocket((BluetoothSocket) msg.obj, true);
@@ -96,8 +94,9 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
                 case HandlerMsg.CLIENT_CONNECT_TO_SERVER_ERROR:
                     sendError(Error.ERROR_CONNECT_SERVER_SOCKET);
                     stopConnectToServerThread();
-                    if (state == State.STATE_PROCESS)
-                        acceptReject(false);
+                    Timber.d("Client couldn't connect to server =%d", state);
+                    //if (state == State.STATE_PROCESS)
+                    acceptReject(false);
                     break;
                 case HandlerMsg.CLIENT_CONNECT_TO_SERVER_SUCCESS:
                     deliverTheSocket((BluetoothSocket) msg.obj, false);
@@ -106,17 +105,18 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
                 case HandlerMsg.SEND_MSG_IP_STREAM_ERROR:
                 case HandlerMsg.SEND_MSG_OP_STREAM_ERROR:
                     stopConnectToServerNSendMsgThread();
-                    if (state == State.STATE_PROCESS)
-                        acceptReject(false);
+                    Timber.d("Send Message thread ip op error =%d", state);
+                    //if (state == State.STATE_PROCESS)
+                    acceptReject(false);
                     break;
                 case HandlerMsg.CLIENT_UNAME_RECEIVED:
                     connectFrom((String) msg.obj);
                     break;
                 case HandlerMsg.SEND_MSG_ACCEPT_REJECT_STATUS:
-                    state = State.STATE_ACCEPT_REJECT_MAIN;
+                    //state = State.STATE_ACCEPT_REJECT_MAIN;
                     stopConnectToServerNSendMsgThread();
-                    acceptReject((Boolean) msg.obj);
-                    state = State.STATE_PROCESS;
+                    boolean accepted = (boolean) msg.obj;
+                    acceptReject(accepted);
                     break;
             }
 
@@ -167,7 +167,7 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
 
     @Override
     public void yesNoMsg(boolean yes) {
-        if (sendMessageThread != null && sendMessageThread.read) {
+        if (sendMessageThread != null && sendMessageThread.isRunning) {
             sendMessageThread.write(yes ? REQUEST_ACCEPT : REQUEST_REJECT);
         }
     }
@@ -239,7 +239,7 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
 
     private class CreateServerAndListenForClientSocketThread extends Thread {
         private final BluetoothServerSocket serverSocket;
-        private boolean run = true;
+        private boolean isRunning = true;
 
         public CreateServerAndListenForClientSocketThread(String serverName, UUID serverId) {
             BluetoothServerSocket tmp = null;
@@ -260,7 +260,7 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
         public void run() {
             super.run();
             BluetoothSocket socket = null;
-            while (run) {
+            while (isRunning) {
                 try {
                     Timber.d("Server is running successfully");
                     socket = serverSocket.accept();
@@ -269,7 +269,8 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
                     Timber.e("This server reject connection, no socket available to this server");
                     e.printStackTrace();
                     //BluetoothClientServerProvider.this.acceptReject(false);
-                    if (mainUiHandler != null)
+                    //don't send any error log during cancellation
+                    if (mainUiHandler != null && isRunning)
                         mainUiHandler.sendEmptyMessage(HandlerMsg.SERVER_REJECT_INCOMING_CONNECTION);
                     return;
                 }
@@ -278,7 +279,7 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
                     // else pass the socket and close this
                     Timber.d("This is server now");
                     //BluetoothClientServerProvider.this.deliverTheSocket(socket, true);
-                    if (mainUiHandler != null) {
+                    if (mainUiHandler != null && isRunning) {
                         Message message = Message.obtain();
                         message.what = HandlerMsg.SERVER_ACCEPT_INCOMING_CONNECTION;
                         message.obj = socket;
@@ -295,7 +296,7 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
         }
 
         public void cancel() {
-            run = false;
+            isRunning = false;
             try {
                 serverSocket.close();
             } catch (IOException e) {
@@ -307,6 +308,7 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
 
     private class ConnectToServerThread extends Thread {
         private BluetoothSocket socketTobePassedToServer;
+        private boolean isRunning = true;
 
         public ConnectToServerThread(BluetoothDevice device, UUID serverId) {
             BluetoothSocket tmp = null;
@@ -338,12 +340,13 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
                 socketTobePassedToServer.connect();
             } catch (Exception e) {
                 Timber.e("Server rejected connection");
-                terminateWithErrorLog(HandlerMsg.CLIENT_CONNECT_TO_SERVER_ERROR);
+                if (isRunning)
+                    terminateWithErrorLog(HandlerMsg.CLIENT_CONNECT_TO_SERVER_ERROR);
                 return;
             }
             Timber.d("Connected to server,this is client now");
             //BluetoothClientServerProvider.this.deliverTheSocket(socketTobePassedToServer, false);
-            if (mainUiHandler != null) {
+            if (mainUiHandler != null && isRunning) {
                 Message message = Message.obtain();
                 message.what = HandlerMsg.CLIENT_CONNECT_TO_SERVER_SUCCESS;
                 message.obj = socketTobePassedToServer;
@@ -353,6 +356,7 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
         }
 
         public void cancel() {
+            isRunning = false;
             try {
                 socketTobePassedToServer.close();
             } catch (IOException e) {
@@ -367,17 +371,23 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
      * This is just a mechanism to indicate that
      * all action of SendMessageThread has been complete
      * by successful action completion or by error
+     * Here order of cancellation is important
+     * First send msg thread must be closed
+     * as it contains the connected socket
+     * and then only connect to server thread
+     * If connectToServer thread is closed first, socket will
+     * be closed and it throws error on sendMessage thread
      */
     private void stopConnectToServerNSendMsgThread() {
-        stopConnectToServerThread();
         stopSendMessageThread();
+        stopConnectToServerThread();
     }
 
     private class SendMessageThread extends Thread {
         private boolean isServer;
         private InputStream inputStream;
         private OutputStream outputStream;
-        private boolean read = true;
+        private boolean isRunning = true;
         private BluetoothSocket socket;
 
         public SendMessageThread(BluetoothSocket socket, boolean isServer) {
@@ -402,7 +412,7 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
         private void terminateWithErrorLog(int what) {
 //            BluetoothClientServerProvider.this.acceptReject(false);
 //            stopConnectToServerNSendMsgThread();
-            if (mainUiHandler != null) {
+            if (mainUiHandler != null && isRunning) {
                 mainUiHandler.sendEmptyMessage(what);
             }
         }
@@ -412,7 +422,7 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
             super.run();
             byte[] buffer = new byte[1024];
             int bytes;
-            while (read) {
+            while (isRunning) {
                 try {
                     bytes = inputStream.read(buffer);
                     String msg = new String(buffer, 0, bytes);
@@ -458,7 +468,7 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
         }
 
         private void acceptReject(boolean accept) {
-            if (mainUiHandler != null) {
+            if (mainUiHandler != null && isRunning) {
                 Message message = Message.obtain();
                 message.what = HandlerMsg.SEND_MSG_ACCEPT_REJECT_STATUS;
                 message.obj = accept;
@@ -471,8 +481,8 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
         }
 
         public void cancel() {
+            isRunning = false;
             try {
-                read = false;
                 outputStream.close();
                 inputStream.close();
                 socket.close();
