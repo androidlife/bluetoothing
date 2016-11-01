@@ -66,7 +66,7 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
         static final int CLIENT_START_ERROR = 0x4;
         static final int CLIENT_CONNECT_TO_SERVER_ERROR = 0x5;
         static final int CLIENT_CONNECT_TO_SERVER_SUCCESS = 0x6;
-        static final int CLIENT_UNAME_RECEIVED = 0x7;
+        static final int SEND_MSG_CLIENT_UNAME_RECEIVED = 0x7;
         static final int SEND_MSG_STREAM_CREATE_ERROR = 0x8;
         static final int SEND_MSG_IP_STREAM_ERROR = 0x9;
         static final int SEND_MSG_OP_STREAM_ERROR = 0x10;
@@ -106,7 +106,7 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
                     //if (state == State.STATE_PROCESS)
                     acceptReject(false);
                     break;
-                case HandlerMsg.CLIENT_UNAME_RECEIVED:
+                case HandlerMsg.SEND_MSG_CLIENT_UNAME_RECEIVED:
                     connectFrom((String) msg.obj);
                     break;
                 case HandlerMsg.SEND_MSG_ACCEPT_REJECT_STATUS:
@@ -435,7 +435,7 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
                         if (mainUiHandler != null) {
                             Message message = Message.obtain();
                             message.obj = msg;
-                            message.what = HandlerMsg.CLIENT_UNAME_RECEIVED;
+                            message.what = HandlerMsg.SEND_MSG_CLIENT_UNAME_RECEIVED;
                             mainUiHandler.sendMessage(message);
                         }
 
