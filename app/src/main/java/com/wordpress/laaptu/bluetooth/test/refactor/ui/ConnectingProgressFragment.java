@@ -1,7 +1,9 @@
 package com.wordpress.laaptu.bluetooth.test.refactor.ui;
 
+import android.app.Dialog;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
@@ -45,6 +47,12 @@ public class ConnectingProgressFragment extends DialogFragment {
         boolean isDark = "TouchDice".equals(action) || "TouchTrails".equals(action);
         int style = isDark ? android.R.style.Theme_Holo_NoActionBar_Fullscreen : android.R.style.Theme_Holo_Light_NoActionBar_Fullscreen;
         setStyle(DialogFragment.STYLE_NO_FRAME, style);
+    }
+
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        return super.onCreateDialog(savedInstanceState);
     }
 
     @Override
@@ -107,6 +115,8 @@ public class ConnectingProgressFragment extends DialogFragment {
 
         return view;
     }
+
+
 
 
 }
