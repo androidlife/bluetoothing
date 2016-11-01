@@ -23,7 +23,7 @@ public class BluetoothProvider implements SocketCommunicator.SocketProvider {
         connectionMonitor = new BluetoothConnectionMonitor(activity, view,
                 BluetoothConnectionMonitor.LISTEN_FOR_BLUETOOTH_DEVICE);
         this.view = view;
-        clientServerProvider = new BluetoothClientServerProvider(this,username);
+        clientServerProvider = new BluetoothClientServerProvider(this, username);
         peerProvider = new BluetoothPeerProvider(activity, view);
         this.username = username;
         this.action = action;
@@ -78,6 +78,11 @@ public class BluetoothProvider implements SocketCommunicator.SocketProvider {
         clientServerProvider.yesNoMsg(yes);
     }
 
+    @Override
+    public void cancelClientConnectionRequest() {
+        clientServerProvider.cancelClientConnectionRequest();
+    }
+
     /**
      * PeerProvider implementation
      * ...starts
@@ -105,7 +110,7 @@ public class BluetoothProvider implements SocketCommunicator.SocketProvider {
 
     @Override
     public void acceptReject(boolean accept) {
-        Timber.d("Is connection accepted =%b",accept);
+        Timber.d("Is connection accepted =%b", accept);
         view.acceptReject(accept);
     }
 }

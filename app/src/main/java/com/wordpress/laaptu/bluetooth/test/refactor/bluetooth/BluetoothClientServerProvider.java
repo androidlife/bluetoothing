@@ -169,6 +169,14 @@ public class BluetoothClientServerProvider implements SocketCommunicator.ClientS
         }
     }
 
+    @Override
+    public void cancelClientConnectionRequest() {
+        /**
+         * This may be called from UI progress fragment cancellation
+         * */
+        stopConnectToServerNSendMsgThread();
+    }
+
     private void acceptReject(boolean accept) {
         Timber.d("Is connection accept =%b and is view provider null = %b", accept, viewProvider == null);
         if (viewProvider != null)

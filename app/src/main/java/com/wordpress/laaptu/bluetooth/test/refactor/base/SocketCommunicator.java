@@ -16,6 +16,7 @@ public class SocketCommunicator {
         void connectTo(DiscoveredPeer peer);
 
         void yesNoMsg(boolean yes);
+        void cancelClientConnectionRequest();
     }
 
 
