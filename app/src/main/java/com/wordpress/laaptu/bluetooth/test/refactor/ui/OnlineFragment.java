@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.squareup.picasso.Picasso;
+import com.wordpress.laaptu.bluetooth.BuildConfig;
 import com.wordpress.laaptu.bluetooth.R;
 import com.wordpress.laaptu.bluetooth.test.bitmaps.loaders.ImageFetcher;
 import com.wordpress.laaptu.bluetooth.test.refactor.IntentUtils;
@@ -41,7 +42,7 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
     private SocketCommunicator.SocketProvider socketProvider;
     private static final String FRAG_CONNECT_CONFIRM = "ConnectConfirmFrag",
             FRAG_SHOW_PROGRESS = "ProgressFrag", FRAG_USER_BUSY = "UserbusyFrag", FRAG_CONNECT_REQUEST = "ConnectRequest";
-    private boolean test = false;
+    //private boolean test = false;
 
     private String dialogType = null;
 
@@ -136,7 +137,7 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
                 }
             }
         };
-        if (test) {
+        if (BuildConfig.TEST) {
             dialogMethod.acceptReject(true);
             return;
         }
@@ -166,7 +167,7 @@ public class OnlineFragment extends Fragment implements PeerListAdapter.OnItemCl
                 }
             }
         };
-        if (test) {
+        if (BuildConfig.TEST) {
             dialogMethod.acceptReject(true);
             return;
         }
